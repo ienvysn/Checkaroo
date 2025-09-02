@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const itemRoutes = require("./routes/items");
 const app = express();
 const cors = require("cors");
-const PORT = 3000;
+const PORT = 5000;
 const MONGO_URI = "mongodb://localhost:27017/sharelist";
 
 // Middleware

@@ -1,11 +1,10 @@
 import React from "react";
-import ListComponent from "./components/ListComponent";
 import "./App.css";
+import ListComponent from "./component/ListComponent";
 
 function App() {
   return (
     <div className="app-container">
-      <h1>Shared List</h1>
       <ListComponent />
     </div>
   );

@@ -1,95 +1,174 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-// The base URL for our backend API
-const API_URL = "http://localhost:5000/api/items";
+import React from "react";
 
 function ListComponent() {
-  const [items, setItems] = useState([]);
-  const [newItemName, setNewItemName] = useState("");
-
-  // Fetch all items from the backend when the component loads
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const response = await axios.get(API_URL);
-        setItems(response.data);
-        console.log("Fetched items successfully:", response.data); // Debugging line
-      } catch (error) {
-        console.error("Error fetching items:", error); // Debugging line
-      }
-    };
-    fetchItems();
-  }, []);
-
-  // Handle adding a new item
-  const handleAddItem = async (e) => {
-    e.preventDefault();
-    if (!newItemName.trim()) return; // Prevent adding empty items
-
-    try {
-      const response = await axios.post(API_URL, { name: newItemName });
-      setItems([response.data, ...items]); // Add the new item to the top of the list
-      setNewItemName(""); // Clear the input field
-      console.log("Added new item:", response.data); // Debugging line
-    } catch (error) {
-      console.error("Error adding item:", error); // Debugging line
-    }
-  };
-
-  // Handle toggling the complete status of an item
-  const handleToggleComplete = async (id) => {
-    try {
-      const response = await axios.put(`${API_URL}/${id}`);
-      setItems(items.map((item) => (item._id === id ? response.data : item)));
-      console.log("Toggled item complete:", response.data); // Debugging line
-    } catch (error) {
-      console.error("Error updating item:", error); // Debugging line
-    }
-  };
-
-  // Handle deleting an item
-  const handleDeleteItem = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      setItems(items.filter((item) => item._id !== id));
-      console.log("Deleted item with id:", id); // Debugging line
-    } catch (error) {
-      console.error("Error deleting item:", error); // Debugging line
-    }
-  };
-
   return (
-    <div className="list-container">
-      <form onSubmit={handleAddItem} className="add-item-form">
-        <input
-          type="text"
-          value={newItemName}
-          onChange={(e) => setNewItemName(e.target.value)}
-          placeholder="Add an item (e.g., Milk)"
-        />
-        <button type="submit">+ Add</button>
-      </form>
+    <div className="checkaroo-container">
+      <nav className="left-panel">
+        <div className="panel-header">
+          <span className="logo">❖</span>
+          <h2>Shared Lists</h2>
+        </div>
+        <div className="search-bar">
+          <input type="text" placeholder="Search groups" />
+        </div>
+        <div className="groups-list">
+          <p>Your groups</p>
+          <ul>
+            <li className="active">
+              <img src="https://i.pravatar.cc/30?u=family" alt="Group" />
+              <span>Family Groceries</span>
+            </li>
+            <li>
+              <img src="https://i.pravatar.cc/30?u=trip" alt="Group" />
+              <span>Weekend Trip</span>
+            </li>
+            <li>
+              <img src="https://i.pravatar.cc/30?u=chores" alt="Group" />
+              <span>Apartment Chores</span>
+            </li>
+          </ul>
+        </div>
+        <div className="panel-footer">
+          <button className="btn-secondary">+ New Group</button>
+          <button className="btn-primary">Invite</button>
+        </div>
+      </nav>
 
-      <ul className="item-list">
-        {items.map((item) => (
-          <li key={item._id} className={item.isComplete ? "completed" : ""}>
-            <div
-              className="item-content"
-              onClick={() => handleToggleComplete(item._id)}
-            >
-              <input type="checkbox" checked={item.isComplete} readOnly />
-              <span>{item.name}</span>
+      <main className="center-panel">
+        <header className="main-header">
+          <div className="header-left">
+            <button className="btn-icon">{"<"}</button>
+            <h3>Family Groceries</h3>
+          </div>
+          <div className="header-right">
+            <span>3 members</span>
+            <button className="btn-secondary">Activity</button>
+            <button className="btn-primary">+ Add</button>
+          </div>
+        </header>
+
+        <section className="list-section-card">
+          <div className="list-header-top">
+            <h3>List</h3>
+            <div className="list-filters">
+              <button className="filter-btn active">
+                <span>🔀</span> Shared
+              </button>
+              <button className="filter-btn">
+                <span>👤</span> Assigned to you
+              </button>
             </div>
-            <button
-              onClick={() => handleDeleteItem(item._id)}
-              className="delete-btn"
-            >
-              🗑️
-            </button>
-          </li>
-        ))}
-      </ul>
+          </div>
+
+          <div className="add-item-form">
+            <input type="text" placeholder="Add an item (e.g., Milk)" />
+            <button className="btn-primary">+ Add</button>
+          </div>
+
+          <div className="item-list-container">
+            <div className="item-list-header">
+              <span />
+              <span>Item</span>
+              <span>Category</span>
+              <span>Added/Assigned</span>
+              <span className="header-actions">Actions</span>
+            </div>
+            <ul className="item-list">
+              <li>
+                <input type="checkbox" />
+                <span className="item-name">Bananas</span>
+                <span className="item-category">Grocery</span>
+                <span className="item-added-by">added by Ana</span>
+                <div className="item-actions">
+                  <button className="btn-icon btn-edit">✏️</button>
+                  <button className="btn-icon btn-delete">🗑️</button>
+                </div>
+              </li>
+              <li>
+                <input type="checkbox" />
+                <span className="item-name">Eggs</span>
+                <span className="item-category">Grocery</span>
+                <span className="item-added-by">added by Lee</span>
+                <div className="item-actions">
+                  <button className="btn-icon btn-edit">✏️</button>
+                  <button className="btn-icon btn-delete">🗑️</button>
+                </div>
+              </li>
+              <li>
+                <input type="checkbox" />
+                <span className="item-name">Paper towels</span>
+                <span className="item-category">Household</span>
+                <span className="item-added-by">added by Jay</span>
+                <div className="item-actions">
+                  <button className="btn-icon btn-edit">✏️</button>
+                  <button className="btn-icon btn-delete">🗑️</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <p className="tip-text">
+            Tip: Click the checkbox to mark an item as bought. Completed items
+            move to history.
+          </p>
+        </section>
+      </main>
+
+      <aside className="right-panel">
+        <div className="activity-log-section">
+          <div className="section-header">
+            <h4>Activity Log</h4>
+            <div className="activity-view-options">
+              <span>Today</span>
+              <button className="btn-link">View all</button>
+            </div>
+          </div>
+          <ul className="activity-list">
+            <li>
+              <img src="https://i.pravatar.cc/30?u=renee" alt="User" />
+              <p>
+                <b>Renee</b> marked Milk as bought <span>2m ago</span>
+              </p>
+            </li>
+            <li>
+              <img src="https://i.pravatar.cc/30?u=jay" alt="User" />
+              <p>
+                <b>Jay</b> added Paper towels <span>15m ago</span>
+              </p>
+            </li>
+          </ul>
+        </div>
+        <div className="members-section">
+          <div className="section-header">
+            <h4>Members</h4>
+            <span>QR</span>
+          </div>
+          <div className="invite-box">
+            <p>Invite via email or link</p>
+            <button className="btn-primary">Share</button>
+          </div>
+          <ul className="members-list">
+            <li>
+              <img src="https://i.pravatar.cc/30?u=ana" alt="User" />
+              <div className="member-info">
+                <span>Ana</span>
+                <small>Owner</small>
+              </div>
+              <button className="btn-icon">...</button>
+            </li>
+            <li>
+              <img src="https://i.pravatar.cc/30?u=jay" alt="User" />
+              <div className="member-info">
+                <span>Jay</span>
+                <small>Member</small>
+              </div>
+              <button className="btn-icon">...</button>
+            </li>
+          </ul>
+          <div className="live-updates">
+            <span></span> Live updates across members
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
