@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Item = require("../models/itemModel");
 const itemModel = require("../models/itemModel");
+const { protect } = require("../middleware/authMiddleware");
 
-router.get("/", async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
     const items = await Item.find();
     res.json(items);
@@ -13,7 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", protect, async (req, res) => {
   try {
     const id = req.params.id;
     const item = await Item.findById(id);
@@ -24,20 +25,21 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     const newItem = new Item({
       name: req.body.name,
+      quantity: req.body.quantity || 1,
     });
     await newItem.save();
-    res.send(newItem);
+    res.json(newItem);
   } catch (err) {
     console.error(err.message);
-    req.send("Cannot add the item");
+    res.status(500).send("Cannot add the item");
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, async (req, res) => {
   try {
     let item = await Item.findById(req.params.id);
     if (!item) return res.status(404).json({ msg: "Item not found" });
@@ -51,7 +53,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     if (!item) {
