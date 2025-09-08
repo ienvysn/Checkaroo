@@ -1,0 +1,211 @@
+.auth-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  font-family: "Inter", sans-serif;
+  color: #374151;
+  background-color: #e5e7eb;
+}
+
+/* --- Left Pane (Form) --- */
+.auth-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #ffffff;
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+.welcome-text {
+  color: #6b7280;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.main-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* --- Form Styles --- */
+.form-container {
+  width: 100%;
+}
+
+.toggle-buttons {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.toggle-btn.active {
+  background-color: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-group {
+  margin-bottom: 1.25rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.password-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0;
+}
+
+.continue-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 1rem 0;
+  transition: background-color 0.2s;
+}
+
+.continue-btn:hover {
+  background-color: #4338ca;
+}
+
+.divider {
+  text-align: center;
+  color: #9ca3af;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.social-login {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.social-btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.terms-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* --- Right Pane (Illustration) --- */
+.auth-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+.auth-right-container {
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+}
+
+.illustration-placeholder {
+  width: 100%;
+  height: 0;
+  padding-bottom: 70%; /* Aspect ratio for the illustration space */
+  background-color: #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.right-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.right-subtitle {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* --- Error Message --- */
+.error-message {
+  color: #ef4444;
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+}

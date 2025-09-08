@@ -11,13 +11,13 @@ function ListComponent() {
     getItems().then((res) => setItems(res.data));
   }, []);
 
-  const handleAdd = () => {
-    if (!newItem.trim()) return;
-    addItem({ name: newItem }).then((res) => {
-      setItems([...items, res.data]);
-      setNewItem("");
-    });
-  };
+  // const handleAdd = () => {
+  //   if (!newItem.trim()) return;
+  //   addItem({ name: newItem }).then((res) => {
+  //     setItems([...items, res.data]);
+  //     setNewItem("");
+  //   });
+  // };
 
   const handleAddFromModal = (itemData) => {
     addItem(itemData).then((res) => {
@@ -35,6 +35,11 @@ function ListComponent() {
     deleteItem(id).then(() => {
       setItems(items.filter((item) => item._id !== id));
     });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.reload();
   };
 
   return (
@@ -68,6 +73,9 @@ function ListComponent() {
           <button className="btn-secondary">+ New Group</button>
           <button className="btn-primary">Invite</button>
         </div>
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
       </nav>
 
       <main className="center-panel">

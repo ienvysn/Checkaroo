@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Item = require("../models/itemModel");
-const itemModel = require("../models/itemModel");
 const { protect } = require("../middleware/authMiddleware");
 
 router.get("/", protect, async (req, res) => {
   try {
-    const items = await Item.find();
+    const items = await Item.find({ user: req.user.id });
     res.json(items);
   } catch (err) {
     console.error(err.message);
@@ -30,6 +29,7 @@ router.post("/", protect, async (req, res) => {
     const newItem = new Item({
       name: req.body.name,
       quantity: req.body.quantity || 1,
+      user: req.user.id,
     });
     await newItem.save();
     res.json(newItem);
@@ -55,7 +55,7 @@ router.put("/:id", protect, async (req, res) => {
 
 router.delete("/:id", protect, async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id);
+    const item = await Item.findOne({ _id: req.params.id, user: req.user.id });
     if (!item) {
       return res.status(404).json({ msg: "Item not found" });
     }
