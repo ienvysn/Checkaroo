@@ -140,20 +140,33 @@ input[type="text"] {
 .left-panel .search-bar {
   margin-bottom: 24px;
 }
-.left-panel .groups-list {
-  flex-grow: 1;
+.left-panel .search-bar {
+  margin-bottom: 24px;
 }
+
+/* --- New Styles for Personal List --- */
+.personal-list,
+.groups-list {
+  margin-bottom: 24px;
+}
+
+.personal-list p,
 .groups-list p {
   font-size: 12px;
   color: var(--medium-gray);
   text-transform: uppercase;
   margin: 0 0 8px 0;
+  font-weight: 500;
 }
+
+.personal-list ul,
 .groups-list ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
+.personal-list li,
 .groups-list li {
   display: flex;
   align-items: center;
@@ -162,24 +175,38 @@ input[type="text"] {
   border-radius: 6px;
   cursor: pointer;
 }
+
+.personal-list li.active,
 .groups-list li.active {
   background-color: var(--light-blue);
   color: var(--primary-blue);
-  font-weight: 500;
 }
+
+.personal-list li.active .list-icon {
+  stroke: var(--primary-blue);
+}
+
+.personal-list .list-icon {
+  width: 24px;
+  height: 24px;
+}
+
 .groups-list li img {
   width: 30px;
   height: 30px;
   border-radius: 50%;
 }
+/* --- End of New Styles --- */
+
 .left-panel .panel-footer {
+  margin-top: auto;
   display: flex;
   gap: 8px;
 }
+
 .panel-footer button {
   flex: 1;
 }
-
 /* --- Center Panel --- */
 .main-header {
   display: flex;

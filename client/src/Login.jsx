@@ -66,13 +66,12 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-left">
         <div className="auth-content">
-          <p className="welcome-text">WELCOME BACK</p>
           <h1 className="main-title">
             {isLogin ? "Log in to your account" : "Create your account"}
           </h1>
 
           <div className="form-container">
-            <div className="toggle-buttons">
+            <div className="toggle-buttons" onClick={() => setError("")}>
               <button
                 className={`toggle-btn ${isLogin ? "active" : ""}`}
                 onClick={() => setIsLogin(true)}

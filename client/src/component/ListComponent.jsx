@@ -52,10 +52,34 @@ function ListComponent() {
         <div className="search-bar">
           <input type="text" placeholder="Search groups" />
         </div>
+
+        <div className="personal-list">
+          <p>Personal</p>
+          <ul>
+            <li className="active">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="list-icon"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                />
+              </svg>
+              <span>My Personal List</span>
+            </li>
+          </ul>
+        </div>
+
         <div className="groups-list">
           <p>Your groups</p>
           <ul>
-            <li className="active">
+            <li>
               <img src="https://i.pravatar.cc/30?u=family" alt="Group" />
               <span>Family Groceries</span>
             </li>
@@ -82,31 +106,24 @@ function ListComponent() {
         <header className="main-header">
           <div className="header-left">
             <button className="btn-icon">{"<"}</button>
-            <h3>Family Groceries</h3>
+            <h3>Personal List</h3>
           </div>
           <div className="header-right">
             <span>3 members</span>
-            <button className="btn-secondary">Activity</button>
-            <button
-              className="btn-primary"
-              onClick={() => setIsModalOpen(true)}
-            >
-              + Add
-            </button>
           </div>
         </header>
 
         <section className="list-section-card">
           <div className="list-header-top">
             <h3>List</h3>
-            <div className="list-filters">
+            {/* <div className="list-filters">
               <button className="filter-btn active">
                 <span>🔀</span> Shared
               </button>
               <button className="filter-btn">
                 <span>👤</span> Assigned to you
               </button>
-            </div>
+            </div> */}
           </div>
 
           <div className="item-list-container">
@@ -190,7 +207,6 @@ function ListComponent() {
           <div className="section-header">
             <h4>Activity Log</h4>
             <div className="activity-view-options">
-              <span>Today</span>
               <button className="btn-link">View all</button>
             </div>
           </div>
