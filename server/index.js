@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const itemRoutes = require("./routes/items");
 const authRoutes = require("./routes/auth");
+const groupRoutes = require("./routes/group");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/items", itemRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/groups", groupRoutes);
 
 // Start server
 app.listen(PORT, () => {

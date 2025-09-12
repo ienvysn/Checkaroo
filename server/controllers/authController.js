@@ -1,4 +1,6 @@
 const User = require("../models/userModel");
+const Group = require("../models/groupModel");
+
 const jwt = require("jsonwebtoken");
 
 const generateToken = (id) => {
@@ -15,10 +17,21 @@ registerUser = async (req, res) => {
 
     const user = await User.create({ username, email, password });
 
+    const personalGroup = await Group.create({
+      name: `${username}'s Personal`,
+      owner: user._id,
+      members: [user._id],
+      isPersonal: true,
+    });
+
+    //Link personal group to user
+    user.personalGroup = personalGroup._id;
+    await user.save();
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
+      personalGroup: personalGroup._id,
       token: generateToken(user._id),
     });
   } catch (err) {

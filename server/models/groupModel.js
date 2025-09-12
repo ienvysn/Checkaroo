@@ -1,11 +1,16 @@
 const mongoose = require("mongoose");
 
-const GroupSchema = new mongoose.Schema(
+const groupSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
       trim: true,
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     members: [
       {
@@ -13,19 +18,16 @@ const GroupSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    items: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Item",
-      },
-    ],
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    isPersonal: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Group", GroupSchema);
+module.exports = mongoose.model("Group", groupSchema);
