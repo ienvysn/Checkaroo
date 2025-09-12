@@ -53,26 +53,25 @@ body {
 .main-content {
   display: flex;
   flex-grow: 1;
-  overflow: hidden;
+  overflow: auto;
   background-color: var(--background-color);
+  padding: 24px;
+  gap: 24px;
 }
 
 .center-panel {
   flex-grow: 1;
-  padding: 24px;
-  padding-top: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-width: 0;
 }
+
 .right-panel {
   width: 320px;
   flex-shrink: 0;
-  padding: 24px;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border-color);
-  background-color: var(--white);
   gap: 24px;
 }
 
@@ -140,11 +139,7 @@ input[type="text"] {
 .left-panel .search-bar {
   margin-bottom: 24px;
 }
-.left-panel .search-bar {
-  margin-bottom: 24px;
-}
 
-/* --- New Styles for Personal List --- */
 .personal-list,
 .groups-list {
   margin-bottom: 24px;
@@ -196,7 +191,6 @@ input[type="text"] {
   height: 30px;
   border-radius: 50%;
 }
-/* --- End of New Styles --- */
 
 .left-panel .panel-footer {
   margin-top: auto;
@@ -207,7 +201,22 @@ input[type="text"] {
 .panel-footer button {
   flex: 1;
 }
-/* --- Center Panel --- */
+.logout-btn {
+  background-color: var(--red);
+  color: var(--white);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+/* --- Main View --- */
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -229,7 +238,10 @@ input[type="text"] {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  margin-top: auto;
+  padding-top: 16px;
 }
+
 .add-item-form input {
   flex-grow: 1;
 }
@@ -260,7 +272,6 @@ input[type="text"] {
 }
 .item-list-header {
   display: grid;
-
   grid-template-columns: 40px 2fr 1fr 1fr 1fr;
   gap: 16px;
   padding: 0 16px 8px 16px;
@@ -299,21 +310,20 @@ input[type="text"] {
   margin-top: 16px;
 }
 
-/* --- Right Panel --- */
+/* --- Right Panel Cards --- */
 .right-panel .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* margin-bottom: 16px; */
-  /* margin-top: 0px; */
 }
 
 .activity-log-section,
 .members-section {
-  background-color: var(--light-gray);
+  background-color: var(--white);
   padding: 16px;
   border-radius: 12px;
-  /* margin-bottom: 1px; */
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .activity-list,
@@ -363,6 +373,7 @@ input[type="text"] {
   align-items: center;
   margin-bottom: 24px;
 }
+
 .invite-box p {
   margin: 0;
   font-weight: 500;
@@ -412,7 +423,6 @@ input[type="text"] {
 }
 
 .btn-delete {
-  /* background-color: var(--red); */
   color: var(--white);
 }
 .item-list-container {
@@ -445,10 +455,7 @@ input[type="text"] {
 }
 
 .view-all {
-  /* background-color: var(--white); */
-  /* border: 1px solid var(--border-color); */
   border-radius: 6px;
-  /* padding: 6px 12px; */
   display: flex;
   align-self: center;
   gap: 8px;
