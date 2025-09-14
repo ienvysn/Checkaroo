@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router({ mergeParams: true });
+const router = express.Router({ mergeParams: true }); // this will pas the param to the nested route
 
 const {
   getItems,
