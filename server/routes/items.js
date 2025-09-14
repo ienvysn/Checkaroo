@@ -1,71 +1,29 @@
 const express = require("express");
-const router = express.Router();
-const Item = require("../models/itemModel");
+const router = express.Router({ mergeParams: true });
+
+const {
+  getItems,
+  getItemById,
+  createItem,
+  updateItem,
+  deleteItem,
+} = require("../controllers/itemController");
+
 const { protect } = require("../middleware/authMiddleware");
 
-router.get("/", protect, async (req, res) => {
-  try {
-    const items = await Item.find({ user: req.user.id });
-    res.json(items);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
+// GET all items in a group
+router.get("/", protect, getItems);
 
-router.get("/:id", protect, async (req, res) => {
-  try {
-    const id = req.params.id;
-    const item = await Item.findById(id);
-    res.send(item);
-  } catch (err) {
-    console.error(err.message);
-    req.status(500).send("Server error");
-  }
-});
+// GET single item by id
+router.get("/:id", protect, getItemById);
 
-router.post("/", protect, async (req, res) => {
-  try {
-    const newItem = new Item({
-      name: req.body.name,
-      quantity: req.body.quantity || 1,
-      user: req.user.id,
-    });
-    await newItem.save();
-    res.json(newItem);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Cannot add the item");
-  }
-});
+// CREATE new item in a group
+router.post("/", protect, createItem);
 
-router.put("/:id", protect, async (req, res) => {
-  try {
-    let item = await Item.findById(req.params.id);
-    if (!item) return res.status(404).json({ msg: "Item not found" });
-    item.isComplete = !item.isComplete;
-    await item.save();
-    console.log(`Item updated: ${item.name}`);
-    res.json(item);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
+// UPDATE (toggle complete) item
+router.put("/:id", protect, updateItem);
 
-router.delete("/:id", protect, async (req, res) => {
-  try {
-    const item = await Item.findOne({ _id: req.params.id, user: req.user.id });
-    if (!item) {
-      return res.status(404).json({ msg: "Item not found" });
-    }
-    await Item.findByIdAndDelete(req.params.id);
-    console.log(`Item deleted: ${item.name}`);
-    res.json({ msg: "Item removed" });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
+// DELETE item
+router.delete("/:id", protect, deleteItem);
 
 module.exports = router;
