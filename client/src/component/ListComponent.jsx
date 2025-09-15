@@ -5,31 +5,32 @@ import AddItemModal from "../AddItemModal";
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const groupId = localStorage.getItem("personalGroupId");
   useEffect(() => {
-    getItems().then((res) => setItems(res.data));
-  }, []);
+    getItems(groupId).then((res) => setItems(res.data));
+  }, [groupId]);
 
   const handleAddFromModal = (itemData) => {
-    addItem(itemData).then((res) => {
+    addItem(groupId, itemData).then((res) => {
       setItems([...items, res.data]);
     });
   };
 
   const handleToggle = (id, isComplete) => {
-    updateItem(id, { isComplete: !isComplete }).then((res) => {
+    updateItem(groupId, id, { isComplete: !isComplete }).then((res) => {
       setItems(items.map((item) => (item._id === id ? res.data : item)));
     });
   };
 
   const handleDelete = (id) => {
-    deleteItem(id).then(() => {
+    deleteItem(groupId, id).then(() => {
       setItems(items.filter((item) => item._id !== id));
     });
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("personalGroupId");
     window.location.reload();
   };
 

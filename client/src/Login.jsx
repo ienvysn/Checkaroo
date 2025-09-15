@@ -18,9 +18,10 @@ const Login = () => {
         email: email.trim(),
         password: password,
       };
-      const { data } = await loginUser(userData);
+      const { data } = await loginUser(userData); // this is drom the res from the server(id,user,group,tokeen...)
       if (data && data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("personalGroupId", data.personalGroup);
         window.location.reload();
       } else {
         setError(

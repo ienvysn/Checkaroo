@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 
 const jwt = require("jsonwebtoken");
+const { use } = require("react");
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -31,7 +32,8 @@ registerUser = async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
-      personalGroup: personalGroup._id,
+      personalGroup: user.personalGroup,
+
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -46,10 +48,12 @@ loginUser = async (req, res) => {
     const user = await User.findOne({ email });
     console.log(user);
     if (user && (await user.matchPassword(password))) {
+      console.log(user);
       res.json({
         _id: user._id,
         username: user.username,
         email: user.email,
+        personalGroup: user.personalGroup,
         token: generateToken(user._id),
       });
     } else {
