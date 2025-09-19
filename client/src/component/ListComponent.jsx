@@ -1,29 +1,43 @@
 import { useEffect, useState } from "react";
-import { getItems, addItem, updateItem, deleteItem } from "../api";
+import { getGroups, getItems, addItem, updateItem, deleteItem } from "../api";
 import AddItemModal from "../AddItemModal";
 
 function ListComponent() {
   const [items, setItems] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(
+    localStorage.getItem("personalGroupId")
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const groupId = localStorage.getItem("personalGroupId");
+
   useEffect(() => {
-    getItems(groupId).then((res) => setItems(res.data));
-  }, [groupId]);
+    // Fetch all groups the user is a member of
+    getGroups().then((res) => {
+      setGroups(res.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Fetch items only for the selected group
+    if (selectedGroupId) {
+      getItems(selectedGroupId).then((res) => setItems(res.data));
+    }
+  }, [selectedGroupId]);
 
   const handleAddFromModal = (itemData) => {
-    addItem(groupId, itemData).then((res) => {
+    addItem(selectedGroupId, itemData).then((res) => {
       setItems([...items, res.data]);
     });
   };
 
   const handleToggle = (id, isComplete) => {
-    updateItem(groupId, id, { isComplete: !isComplete }).then((res) => {
+    updateItem(selectedGroupId, id, { isComplete: !isComplete }).then((res) => {
       setItems(items.map((item) => (item._id === id ? res.data : item)));
     });
   };
 
   const handleDelete = (id) => {
-    deleteItem(groupId, id).then(() => {
+    deleteItem(selectedGroupId, id).then(() => {
       setItems(items.filter((item) => item._id !== id));
     });
   };
@@ -33,6 +47,15 @@ function ListComponent() {
     localStorage.removeItem("personalGroupId");
     window.location.reload();
   };
+
+  const handleGroupClick = (groupId) => {
+    setSelectedGroupId(groupId);
+  };
+
+  // Find the selected group to display its name
+  const selectedGroup = groups.find((group) => group._id === selectedGroupId);
+  const personalGroup = groups.find((group) => group.isPersonal);
+  const sharedGroups = groups.filter((group) => !group.isPersonal);
 
   return (
     <div className="checkaroo-container">
@@ -48,41 +71,49 @@ function ListComponent() {
         <div className="personal-list">
           <p>Personal</p>
           <ul>
-            <li className="active">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="list-icon"
+            {personalGroup && (
+              <li
+                className={
+                  selectedGroupId === personalGroup._id ? "active" : ""
+                }
+                onClick={() => handleGroupClick(personalGroup._id)}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                />
-              </svg>
-              <span>My Personal List</span>
-            </li>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="list-icon"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                  />
+                </svg>
+                <span>{personalGroup.name}</span>
+              </li>
+            )}
           </ul>
         </div>
 
         <div className="groups-list">
           <p>Your groups</p>
           <ul>
-            <li>
-              <img src="https://i.pravatar.cc/30?u=family" alt="Group" />
-              <span>Family Groceries</span>
-            </li>
-            <li>
-              <img src="https://i.pravatar.cc/30?u=trip" alt="Group" />
-              <span>Weekend Trip</span>
-            </li>
-            <li>
-              <img src="https://i.pravatar.cc/30?u=chores" alt="Group" />
-              <span>Apartment Chores</span>
-            </li>
+            {sharedGroups.map((group) => (
+              <li
+                key={group._id}
+                className={selectedGroupId === group._id ? "active" : ""}
+                onClick={() => handleGroupClick(group._id)}
+              >
+                <img
+                  src={`https://i.pravatar.cc/30?u=${group._id}`}
+                  alt="Group"
+                />
+                <span>{group.name}</span>
+              </li>
+            ))}
           </ul>
         </div>
         <div className="panel-footer">
@@ -98,10 +129,14 @@ function ListComponent() {
         <header className="main-header">
           <div className="header-left">
             <button className="btn-icon">{"<"}</button>
-            <h3>Personal List</h3>
+            <h3>{selectedGroup ? selectedGroup.name : "Personal List"}</h3>
           </div>
           <div className="header-right">
-            <span>3 members</span>
+            <span>
+              {selectedGroup
+                ? `${selectedGroup.members.length} members`
+                : "1 member"}
+            </span>
           </div>
         </header>
 
@@ -225,22 +260,24 @@ function ListComponent() {
                 <button className="btn-primary">Share</button>
               </div>
               <ul className="members-list">
-                <li>
-                  <img src="https://i.pravatar.cc/30?u=ana" alt="User" />
-                  <div className="member-info">
-                    <span>Ana</span>
-                    <small>Owner</small>
-                  </div>
-                  <button className="btn-icon">...</button>
-                </li>
-                <li>
-                  <img src="https://i.pravatar.cc/30?u=jay" alt="User" />
-                  <div className="member-info">
-                    <span>Jay</span>
-                    <small>Member</small>
-                  </div>
-                  <button className="btn-icon">...</button>
-                </li>
+                {selectedGroup &&
+                  selectedGroup.members.map((member) => (
+                    <li key={member._id}>
+                      <img
+                        src={`https://i.pravatar.cc/30?u=${member._id}`}
+                        alt="User"
+                      />
+                      <div className="member-info">
+                        <span>{member.username}</span>
+                        <small>
+                          {selectedGroup.owner === member._id
+                            ? "Owner"
+                            : "Member"}
+                        </small>
+                      </div>
+                      <button className="btn-icon">...</button>
+                    </li>
+                  ))}
               </ul>
               <div className="live-updates">
                 <span></span> Live updates across members

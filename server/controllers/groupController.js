@@ -17,14 +17,17 @@ const createGroup = async (req, res) => {
 };
 
 const getGroups = async (req, res) => {
-  const groups = await Group.find({ members: req.user._id });
+  const groups = await Group.find({ members: req.user._id }).populate(
+    "members",
+    "username"
+  );
   res.json(groups);
 };
 
 const getGroup = async (req, res) => {
   const group = await Group.findById(req.params.id).populate(
     "members",
-    "name email"
+    "username"
   );
   if (!group) return res.status(404).json({ message: "Group not found" });
 
@@ -36,7 +39,6 @@ const getGroup = async (req, res) => {
 
   res.json(group);
 };
-
 const joinGroup = async (req, res) => {
   const group = await Group.findById(req.params.id);
   if (!group) return res.status(404).json({ message: "Group not found" });
