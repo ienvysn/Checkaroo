@@ -1,0 +1,165 @@
+/* client/src/ShareGroupModal.css */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.share-modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.modal-body .subtitle {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.invite-section,
+.qr-section {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.invite-header,
+.qr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.invite-header h4,
+.qr-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.group-name-label,
+.valid-label {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-group input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.copy-btn {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copy-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.help-text {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+.qr-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.qr-image-container img {
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+}
+
+.qr-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.secondary-btn {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4f46e5;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.secondary-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+}

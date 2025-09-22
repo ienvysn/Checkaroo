@@ -1,24 +1,51 @@
 import { useEffect, useState } from "react";
 import { getGroups, getItems, addItem, updateItem, deleteItem } from "../api";
 import AddItemModal from "../AddItemModal";
+import ShareGroupModal from "../shareGroupModal";
 
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(
     localStorage.getItem("personalGroupId")
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const fetchGroups = async () => {
+    try {
+      const res = await getGroups();
+      setGroups(res.data);
+      if (res.data.length > 0 && !selectedGroupId) {
+        const personal = res.data.find((g) => g.isPersonal);
+        if (personal) {
+          setSelectedGroupId(personal._id);
+          localStorage.setItem("personalGroupId", personal._id);
+        } else {
+          setSelectedGroupId(res.data[0]._id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch groups:", err);
+    }
+  };
 
+  const fetchItems = async () => {
+    if (selectedGroupId) {
+      try {
+        const res = await getItems(selectedGroupId);
+        setItems(res.data);
+      } catch (err) {
+        console.error("Failed to fetch items:", err);
+      }
+    }
+  };
   useEffect(() => {
-    // Fetch all groups the user is a member of
     getGroups().then((res) => {
       setGroups(res.data);
     });
   }, []);
 
   useEffect(() => {
-    // Fetch items only for the selected group
     if (selectedGroupId) {
       getItems(selectedGroupId).then((res) => setItems(res.data));
     }
@@ -52,11 +79,13 @@ function ListComponent() {
     setSelectedGroupId(groupId);
   };
 
-  // Find the selected group to display its name
+  const handleShareClick = () => {
+    setIsShareModalOpen(true);
+  };
+
   const selectedGroup = groups.find((group) => group._id === selectedGroupId);
   const personalGroup = groups.find((group) => group.isPersonal);
   const sharedGroups = groups.filter((group) => !group.isPersonal);
-
   return (
     <div className="checkaroo-container">
       <nav className="left-panel">
@@ -257,7 +286,9 @@ function ListComponent() {
               </div>
               <div className="invite-box">
                 <p>Invite via email or link</p>
-                <button className="btn-primary">Share</button>
+                <button className="btn-primary" onClick={handleShareClick}>
+                  Share
+                </button>
               </div>
               <ul className="members-list">
                 {selectedGroup &&
@@ -292,6 +323,14 @@ function ListComponent() {
         onClose={() => setIsModalOpen(false)}
         onAddItem={handleAddFromModal}
       />
+      {selectedGroup && (
+        <ShareGroupModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          groupName={selectedGroup.name}
+          groupId={selectedGroup._id}
+        />
+      )}
     </div>
   );
 }
