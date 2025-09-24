@@ -6,11 +6,12 @@ import ShareGroupModal from "../shareGroupModal";
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(
     localStorage.getItem("personalGroupId")
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
   const fetchGroups = async () => {
     try {
       const res = await getGroups();
@@ -39,16 +40,13 @@ function ListComponent() {
       }
     }
   };
+
   useEffect(() => {
-    getGroups().then((res) => {
-      setGroups(res.data);
-    });
+    fetchGroups();
   }, []);
 
   useEffect(() => {
-    if (selectedGroupId) {
-      getItems(selectedGroupId).then((res) => setItems(res.data));
-    }
+    fetchItems();
   }, [selectedGroupId]);
 
   const handleAddFromModal = (itemData) => {
@@ -75,17 +73,22 @@ function ListComponent() {
     window.location.reload();
   };
 
-  const handleGroupClick = (groupId) => {
-    setSelectedGroupId(groupId);
+  const handleShareClick = () => {
+    if (selectedGroup && selectedGroup.inviteToken) {
+      setIsShareModalOpen(true);
+    } else {
+      alert("This is a personal list and cannot be shared.");
+    }
   };
 
-  const handleShareClick = () => {
-    setIsShareModalOpen(true);
+  const handleGroupClick = (groupId) => {
+    setSelectedGroupId(groupId);
   };
 
   const selectedGroup = groups.find((group) => group._id === selectedGroupId);
   const personalGroup = groups.find((group) => group.isPersonal);
   const sharedGroups = groups.filter((group) => !group.isPersonal);
+
   return (
     <div className="checkaroo-container">
       <nav className="left-panel">
@@ -147,7 +150,9 @@ function ListComponent() {
         </div>
         <div className="panel-footer">
           <button className="btn-secondary">+ New Group</button>
-          <button className="btn-primary">Invite</button>
+          <button className="btn-primary" onClick={handleShareClick}>
+            Invite
+          </button>
         </div>
         <button onClick={handleLogout} className="logout-btn">
           Logout
@@ -248,7 +253,7 @@ function ListComponent() {
                 </p>
                 <button
                   className="btn-primary"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => setIsAddItemModalOpen(true)}
                 >
                   + Add
                 </button>
@@ -282,7 +287,6 @@ function ListComponent() {
             <div className="members-section">
               <div className="section-header">
                 <h4>Members</h4>
-                <span>QR</span>
               </div>
               <div className="invite-box">
                 <p>Invite via email or link</p>
@@ -319,10 +323,11 @@ function ListComponent() {
       </div>
 
       <AddItemModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isAddItemModalOpen}
+        onClose={() => setIsAddItemModalOpen(false)}
         onAddItem={handleAddFromModal}
       />
+
       {selectedGroup && (
         <ShareGroupModal
           isOpen={isShareModalOpen}

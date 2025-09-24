@@ -8,6 +8,7 @@ const {
   getGroup,
   getGroups,
   joinGroup,
+  joinGroupWithToken,
   leaveGroup,
 } = require("../controllers/groupController");
 
@@ -18,6 +19,8 @@ router.get("/", protect, getGroups);
 router.get("/:id", protect, getGroup);
 
 router.post("/:id/join", protect, joinGroup);
+
+router.get("/invite/:token", joinGroupWithToken);
 
 router.post("/:id/leave", protect, leaveGroup);
 

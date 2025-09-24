@@ -2,7 +2,7 @@ const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 
 const jwt = require("jsonwebtoken");
-const { use } = require("react");
+
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -33,7 +33,6 @@ registerUser = async (req, res) => {
       username: user.username,
       email: user.email,
       personalGroup: user.personalGroup,
-
       token: generateToken(user._id),
     });
   } catch (err) {

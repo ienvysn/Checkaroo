@@ -40,6 +40,7 @@ export const getGroupById = (groupId) => API.get(`/groups/${groupId}`);
 export const createGroup = (groupData) => API.post("/groups", groupData);
 export const joinGroup = (groupId) => API.post(`/groups/${groupId}/join`);
 export const deleteGroup = (groupId) => API.delete(`/groups/${groupId}`);
+export const getInviteInfo = (token) => API.get(`/groups/invite/${token}`);
 
 /* ------------------- Items (nested under groups) ------------------- */
 export const getItems = (groupId) => API.get(`/groups/${groupId}/items`);

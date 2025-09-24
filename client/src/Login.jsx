@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { loginUser, registerUser } from "./api";
+import { loginUser, registerUser, getInviteInfo } from "./api";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,11 +18,20 @@ const Login = () => {
         email: email.trim(),
         password: password,
       };
-      const { data } = await loginUser(userData); // this is drom the res from the server(id,user,group,tokeen...)
+      const { data } = await loginUser(userData);
       if (data && data.token) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("personalGroupId", data.personalGroup);
-        window.location.reload();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteToken = urlParams.get("inviteToken");
+
+        if (inviteToken) {
+          const inviteRes = await getInviteInfo(inviteToken);
+          window.location.href = `/groups/${inviteRes.data.group._id}`;
+        } else {
+          localStorage.setItem("personalGroupId", data.personalGroup);
+          window.location.reload();
+        }
       } else {
         setError(
           data.message || "Login failed. Please check your credentials."
@@ -51,7 +60,17 @@ const Login = () => {
       const { data } = await registerUser(userData);
       if (data.token) {
         localStorage.setItem("token", data.token);
-        window.location.reload();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteToken = urlParams.get("inviteToken");
+
+        if (inviteToken) {
+          const inviteRes = await getInviteInfo(inviteToken);
+          window.location.href = `/groups/${inviteRes.data.group._id}`;
+        } else {
+          localStorage.setItem("personalGroupId", data.personalGroup);
+          window.location.reload();
+        }
       }
     } catch (err) {
       if (err.response && err.response.status === 400) {
@@ -103,12 +122,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="input-group">
-                  <div className="password-header">
-                    <label htmlFor="password">Password</label>
-                    <button type="button" className="link-button">
-                      Forgot password?
-                    </button>
-                  </div>
+                  <label htmlFor="password">Password</label>
                   <input
                     type="password"
                     id="password"
@@ -117,6 +131,11 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="password-header">
+                  <button type="button" className="link-button">
+                    Forgot password?
+                  </button>
                 </div>
                 <button type="submit" className="continue-btn">
                   Continue

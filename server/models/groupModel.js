@@ -26,6 +26,11 @@ const groupSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    inviteToken: {
+      type: String,
+      unique: true, // ensures no duplicate tokens across groups
+      sparse: true,
+    },
   },
   { timestamps: true }
 );

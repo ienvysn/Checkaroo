@@ -6,7 +6,7 @@ import "./ShareGroupModal.css";
 const ShareGroupModal = ({ isOpen, onClose, groupName, groupId }) => {
   if (!isOpen) return null;
 
-  const inviteLink = `https://lists.app/invite/${groupId}`;
+  const inviteLink = `http://localhost:3000/invite/${groupId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${inviteLink}`;
 
   const handleCopyLink = () => {
