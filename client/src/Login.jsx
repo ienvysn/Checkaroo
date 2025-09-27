@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { loginUser, registerUser, getInviteInfo } from "./api";
+import { loginUser, registerUser, getInviteInfo, joinGroup } from "./api";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,17 +21,37 @@ const Login = () => {
       const { data } = await loginUser(userData);
       if (data && data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("personalGroupId", data.personalGroup);
 
+        // Check for invite token in URL
         const urlParams = new URLSearchParams(window.location.search);
         const inviteToken = urlParams.get("inviteToken");
 
         if (inviteToken) {
-          const inviteRes = await getInviteInfo(inviteToken);
-          window.location.href = `/groups/${inviteRes.data.group._id}`;
-        } else {
-          localStorage.setItem("personalGroupId", data.personalGroup);
-          window.location.reload();
+          try {
+            // First get the group info
+            const inviteRes = await getInviteInfo(inviteToken);
+            const groupId = inviteRes.data.group._id;
+
+            await joinGroup(groupId);
+
+            // Clear invite token from URL
+            const url = new URL(window.location);
+            url.searchParams.delete("inviteToken");
+            window.history.replaceState({}, "", url);
+
+            // Set the joined group as selected
+            localStorage.setItem("selectedGroupId", groupId);
+
+            console.log(
+              `Successfully joined group: ${inviteRes.data.group.name}`
+            );
+          } catch (joinErr) {
+            console.error("Failed to join group:", joinErr);
+          }
         }
+
+        window.location.reload();
       } else {
         setError(
           data.message || "Login failed. Please check your credentials."
@@ -60,17 +80,39 @@ const Login = () => {
       const { data } = await registerUser(userData);
       if (data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("personalGroupId", data.personalGroup);
 
+        // Check for invite token in URL
         const urlParams = new URLSearchParams(window.location.search);
         const inviteToken = urlParams.get("inviteToken");
 
         if (inviteToken) {
-          const inviteRes = await getInviteInfo(inviteToken);
-          window.location.href = `/groups/${inviteRes.data.group._id}`;
-        } else {
-          localStorage.setItem("personalGroupId", data.personalGroup);
-          window.location.reload();
+          try {
+            // First get the group info
+            const inviteRes = await getInviteInfo(inviteToken);
+            const groupId = inviteRes.data.group._id;
+
+            // Join the group
+            await joinGroup(groupId);
+
+            // Clear invite token from URL
+            const url = new URL(window.location);
+            url.searchParams.delete("inviteToken");
+            window.history.replaceState({}, "", url);
+
+            // Set the joined group as selected
+            localStorage.setItem("selectedGroupId", groupId);
+
+            console.log(
+              `Successfully joined group: ${inviteRes.data.group.name}`
+            );
+          } catch (joinErr) {
+            console.error("Failed to join group:", joinErr);
+            // Continue with normal signup even if group join fails
+          }
         }
+
+        window.location.reload();
       }
     } catch (err) {
       if (err.response && err.response.status === 400) {

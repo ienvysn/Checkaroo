@@ -7,7 +7,8 @@ function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(
-    localStorage.getItem("personalGroupId")
+    localStorage.getItem("selectedGroupId") ||
+      localStorage.getItem("personalGroupId")
   );
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -334,6 +335,7 @@ function ListComponent() {
           onClose={() => setIsShareModalOpen(false)}
           groupName={selectedGroup.name}
           groupId={selectedGroup._id}
+          inviteToken={selectedGroup.inviteToken}
         />
       )}
     </div>

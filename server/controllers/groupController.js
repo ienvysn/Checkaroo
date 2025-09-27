@@ -72,7 +72,16 @@ const joinGroup = async (req, res) => {
 
 const joinGroupWithToken = async (req, res) => {
   const { token } = req.params;
-  const group = await Group.findOne({ inviteToken: token });
+
+  let group = await Group.findOne({ inviteToken: token });
+
+  if (!group) {
+    try {
+      group = await Group.findById(token);
+    } catch (err) {
+      return res.status(404).json({ message: "Invalid invite link" });
+    }
+  }
 
   if (!group) {
     return res.status(404).json({ message: "Invalid invite link" });
@@ -87,14 +96,20 @@ const joinGroupWithToken = async (req, res) => {
     return res.status(200).json({ message: "Already a member", group });
   }
 
+  // If user is authenticated, add them to the group
   if (req.user) {
     group.members.push(req.user._id);
     await group.save();
+
+    // Populate members for response
+    await group.populate("members", "username");
+
     return res
       .status(200)
       .json({ message: "Joined group successfully!", group });
   }
 
+  // If user is not authenticated, return group info for display
   return res.status(200).json({ message: "Login to join this group", group });
 };
 
