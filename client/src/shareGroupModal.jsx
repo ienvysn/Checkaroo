@@ -1,8 +1,7 @@
-// client/src/ShareGroupModal.jsx
-
 import React from "react";
 import "./ShareGroupModal.css";
 import { useToast } from "./Toast";
+import useEscapeKey from "./hooks/useEscKey";
 
 const ShareGroupModal = ({
   isOpen,
@@ -12,6 +11,7 @@ const ShareGroupModal = ({
   inviteToken,
 }) => {
   const { showSuccess, showError } = useToast();
+  useEscapeKey(isOpen, onClose);
 
   if (!isOpen) return null;
 

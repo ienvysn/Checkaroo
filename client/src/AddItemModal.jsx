@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import "./AddItemModal";
 import "./AddItemModal.css";
+import useEscapeKey from "./hooks/useEscKey";
 
 const AddItemModal = ({ isOpen, onClose, onAddItem }) => {
+  const handleCancel = () => {
+    setItemName("");
+    setQuantity("1");
+    onClose();
+  };
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("1");
-
+  useEscapeKey(isOpen, handleCancel);
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!itemName.trim()) return;
@@ -16,12 +22,6 @@ const AddItemModal = ({ isOpen, onClose, onAddItem }) => {
     });
 
     // Reset form
-    setItemName("");
-    setQuantity("1");
-    onClose();
-  };
-
-  const handleCancel = () => {
     setItemName("");
     setQuantity("1");
     onClose();

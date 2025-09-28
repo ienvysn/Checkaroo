@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getGroups, getItems, addItem, updateItem, deleteItem } from "../api";
 import AddItemModal from "../AddItemModal";
 import ShareGroupModal from "../shareGroupModal";
+import CreateGroupModal from "../CreateGroupModal";
 
 function ListComponent() {
   const [items, setItems] = useState([]);
@@ -12,6 +13,7 @@ function ListComponent() {
   );
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
 
   const fetchGroups = async () => {
     try {
@@ -85,6 +87,10 @@ function ListComponent() {
   const handleGroupClick = (groupId) => {
     setSelectedGroupId(groupId);
   };
+  const handleGroupCreated = (newGroup) => {
+    setGroups([...groups, newGroup]);
+    localStorage.setItem("selectedGroupId", newGroup._id);
+  };
 
   const selectedGroup = groups.find((group) => group._id === selectedGroupId);
   const personalGroup = groups.find((group) => group.isPersonal);
@@ -150,7 +156,12 @@ function ListComponent() {
           </ul>
         </div>
         <div className="panel-footer">
-          <button className="btn-secondary">+ New Group</button>
+          <button
+            className="btn-secondary"
+            onClick={() => setIsCreateGroupModalOpen(true)}
+          >
+            + New Group
+          </button>
           <button className="btn-primary" onClick={handleShareClick}>
             Invite
           </button>
@@ -190,63 +201,109 @@ function ListComponent() {
                   <span>Added/Assigned</span>
                   <span className="header-actions">Actions</span>
                 </div>
-                <ul className="item-list">
-                  {items
-                    .slice()
-                    .sort((a, b) => a.isComplete - b.isComplete)
-                    .map((item) => (
-                      <li
-                        key={item._id}
-                        className={item.isComplete ? "completed" : ""}
-                      >
-                        <input
-                          type="checkbox"
-                          onClick={() =>
-                            handleToggle(item._id, item.isComplete)
-                          }
-                          checked={item.isComplete}
-                          onChange={() =>
-                            handleToggle(item._id, item.isComplete)
-                          }
-                        />
-                        <span
-                          className="item-name"
-                          style={{
-                            textDecoration: item.isComplete
-                              ? "line-through"
-                              : "none",
-                          }}
-                        >
-                          {item.name}
-                        </span>
-                        <span className="item-quantity">x{item.quantity}</span>
-                        <span className="item-added-by">added by You</span>
-                        <div className="item-actions">
-                          <button
-                            type="button"
-                            className="btn-icon btn-delete"
-                            onClick={() => handleDelete(item._id)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
 
+                {items.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="empty-state-title">No items yet</h3>
+                    <p className="empty-state-description">
+                      Add items by pressing the button below to get started with
+                      your list.
+                    </p>
+                    <button
+                      className="empty-state-action"
+                      onClick={() => setIsAddItemModalOpen(true)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4.5v15m7.5-7.5h-15"
+                        />
+                      </svg>
+                      Add your first item
+                    </button>
+                  </div>
+                ) : (
+                  <ul className="item-list">
+                    {items
+                      .slice()
+                      .sort((a, b) => a.isComplete - b.isComplete)
+                      .map((item) => (
+                        <li
+                          key={item._id}
+                          className={item.isComplete ? "completed" : ""}
+                        >
+                          <input
+                            type="checkbox"
+                            onClick={() =>
+                              handleToggle(item._id, item.isComplete)
+                            }
+                            checked={item.isComplete}
+                            onChange={() =>
+                              handleToggle(item._id, item.isComplete)
+                            }
+                          />
+                          <span
+                            className="item-name"
+                            style={{
+                              textDecoration: item.isComplete
+                                ? "line-through"
+                                : "none",
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                          <span className="item-quantity">
+                            x{item.quantity}
+                          </span>
+                          <span className="item-added-by">added by You</span>
+                          <div className="item-actions">
+                            <button
+                              type="button"
+                              className="btn-icon btn-delete"
+                              onClick={() => handleDelete(item._id)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
               <div className="add-item-form">
                 <p className="tip-text">
                   Tip: Click the checkbox to mark an item as bought. Completed
@@ -338,6 +395,11 @@ function ListComponent() {
           inviteToken={selectedGroup.inviteToken}
         />
       )}
+      <CreateGroupModal
+        isOpen={isCreateGroupModalOpen}
+        onClose={() => setIsCreateGroupModalOpen(false)}
+        onGroupCreated={handleGroupCreated}
+      />
     </div>
   );
 }

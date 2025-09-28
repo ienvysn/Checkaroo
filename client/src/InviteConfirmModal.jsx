@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getInviteInfo, joinGroup } from "./api";
 import { useToast } from "./Toast";
 import "./InviteConfirmModal.css";
+import useEscapeKey from "./hooks/useEscKey";
 
 const InviteConfirmModal = ({
   isOpen,
@@ -14,7 +15,7 @@ const InviteConfirmModal = ({
   const [error, setError] = useState("");
   const [joining, setJoining] = useState(false);
   const { showSuccess, showError } = useToast();
-
+  useEscapeKey(isOpen, onClose);
   useEffect(() => {
     if (isOpen && inviteToken) {
       fetchGroupInfo();
