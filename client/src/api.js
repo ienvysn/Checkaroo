@@ -50,3 +50,9 @@ export const updateItem = (groupId, itemId, updates) =>
   API.put(`/groups/${groupId}/items/${itemId}`, updates);
 export const deleteItem = (groupId, itemId) =>
   API.delete(`/groups/${groupId}/items/${itemId}`);
+
+/*-------------------Activity-----------------------*/
+export const getActivities = (groupId) =>
+  API.get(`/groups/${groupId}/activities`);
+export const getRecentActivities = (groupId) =>
+  API.get(`/groups/${groupId}/activities/recent`);

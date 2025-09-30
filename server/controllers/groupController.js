@@ -1,6 +1,7 @@
 const Group = require("../models/groupModel");
 const Item = require("../models/itemModel");
 const crypto = require("crypto");
+const { createActivity } = require("./activityController");
 
 const createGroup = async (req, res) => {
   try {
@@ -66,7 +67,13 @@ const joinGroup = async (req, res) => {
 
   group.members.push(req.user._id);
   await group.save();
-
+  await createActivity(
+    req.user._id,
+    req.user.username,
+    "joined_group",
+    group._id,
+    null
+  );
   res.json({ message: "Joined group", group });
 };
 
@@ -127,6 +134,13 @@ const leaveGroup = async (req, res) => {
   }
 
   await group.save();
+  await createActivity(
+    req.user._id,
+    req.user.username,
+    "left_group",
+    group._id,
+    null
+  );
   res.json({ message: "Left group", group });
 };
 

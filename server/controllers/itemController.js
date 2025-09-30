@@ -1,6 +1,6 @@
 const Item = require("../models/itemModel");
 const Group = require("../models/groupModel");
-
+const { createActivity } = require("./activityController");
 // Get all items in a group
 const getItems = async (req, res) => {
   try {
@@ -58,6 +58,13 @@ const createItem = async (req, res) => {
     });
 
     await newItem.save();
+    await createActivity(
+      req.user.id,
+      req.user.username,
+      "added_item",
+      groupId,
+      name
+    );
     res.status(201).json(newItem);
   } catch (err) {
     console.error(err.message);
@@ -98,6 +105,15 @@ const deleteItem = async (req, res) => {
     }
 
     await item.deleteOne();
+
+    await createActivity(
+      req.user.id,
+      req.user.username,
+      "deleted_item",
+      item.group,
+      itemName
+    );
+
     res.json({ msg: "Item removed" });
   } catch (err) {
     console.error(err.message);

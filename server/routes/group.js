@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const itemRoutes = require("./items");
 const { protect } = require("../middleware/authMiddleware");
+const activityRoutes = require("./activity");
 const {
   createGroup,
   deleteGroup,
@@ -28,5 +29,6 @@ router.delete("/:id", protect, deleteGroup);
 
 // ANy request in this route will use itemroutes. so groups/groupid/items/itemid
 router.use("/:groupId/items", itemRoutes);
+router.use("/:groupId/activities", activityRoutes);
 
 module.exports = router;
