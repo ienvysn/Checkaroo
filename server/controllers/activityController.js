@@ -9,6 +9,14 @@ const createActivity = async (
   itemName = null
 ) => {
   try {
+    console.log("Creating activity:", {
+      userId,
+      username,
+      action,
+      groupId,
+      itemName,
+    });
+
     const activity = await Activity.create({
       user: userId,
       username: username,
@@ -16,6 +24,7 @@ const createActivity = async (
       itemName: itemName,
       group: groupId,
     });
+
     return activity;
   } catch (err) {
     console.error("Error creating activity:", err);
@@ -52,7 +61,7 @@ const getActivities = async (req, res) => {
   }
 };
 
-// Get recent activities
+// Get recent activities (for sidebar - last 3)
 const getRecentActivities = async (req, res) => {
   try {
     const { groupId } = req.params;

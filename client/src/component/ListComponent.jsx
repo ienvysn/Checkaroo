@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { getGroups, getItems, addItem, updateItem, deleteItem } from "../api";
+import {
+  getGroups,
+  getItems,
+  addItem,
+  updateItem,
+  deleteItem,
+  getRecentActivities,
+} from "../api";
 import AddItemModal from "../AddItemModal";
 import ShareGroupModal from "../shareGroupModal";
 import CreateGroupModal from "../CreateGroupModal";
+import ActivityModal from "../ActivityModal";
 
 function ListComponent() {
   const [items, setItems] = useState([]);
@@ -14,12 +22,37 @@ function ListComponent() {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+  const [activities, setActivities] = useState([]);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setCurrentUserId(payload.id);
+      } catch (err) {
+        console.error("Failed to decode token:", err);
+      }
+    }
+  }, []);
 
   const fetchGroups = async () => {
     try {
       const res = await getGroups();
       setGroups(res.data);
-      if (res.data.length > 0 && !selectedGroupId) {
+
+      const storedSelectedId = localStorage.getItem("selectedGroupId");
+      const storedPersonalId = localStorage.getItem("personalGroupId");
+
+      if (
+        storedSelectedId &&
+        res.data.find((g) => g._id === storedSelectedId)
+      ) {
+        setSelectedGroupId(storedSelectedId);
+        localStorage.removeItem("selectedGroupId");
+      } else if (res.data.length > 0 && !selectedGroupId) {
         const personal = res.data.find((g) => g.isPersonal);
         if (personal) {
           setSelectedGroupId(personal._id);
@@ -44,29 +77,44 @@ function ListComponent() {
     }
   };
 
+  const fetchActivities = async () => {
+    if (selectedGroupId) {
+      try {
+        const res = await getRecentActivities(selectedGroupId);
+        setActivities(res.data);
+      } catch (err) {
+        console.error("Failed to fetch activities:", err);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchGroups();
   }, []);
 
   useEffect(() => {
     fetchItems();
+    fetchActivities();
   }, [selectedGroupId]);
 
   const handleAddFromModal = (itemData) => {
     addItem(selectedGroupId, itemData).then((res) => {
       setItems([...items, res.data]);
+      fetchActivities();
     });
   };
 
   const handleToggle = (id, isComplete) => {
     updateItem(selectedGroupId, id, { isComplete: !isComplete }).then((res) => {
       setItems(items.map((item) => (item._id === id ? res.data : item)));
+      fetchActivities();
     });
   };
 
   const handleDelete = (id) => {
     deleteItem(selectedGroupId, id).then(() => {
       setItems(items.filter((item) => item._id !== id));
+      fetchActivities();
     });
   };
 
@@ -87,9 +135,42 @@ function ListComponent() {
   const handleGroupClick = (groupId) => {
     setSelectedGroupId(groupId);
   };
+
   const handleGroupCreated = (newGroup) => {
     setGroups([...groups, newGroup]);
+    setSelectedGroupId(newGroup._id);
     localStorage.setItem("selectedGroupId", newGroup._id);
+  };
+
+  const getActivityText = (activity) => {
+    const isCurrentUser = activity.user === currentUserId;
+    const userName = isCurrentUser ? "You" : activity.username;
+
+    switch (activity.action) {
+      case "added_item":
+        return `${userName} added ${activity.itemName}`;
+      case "marked_complete":
+        return `${userName} marked ${activity.itemName} as bought`;
+      case "marked_incomplete":
+        return `${userName} unmarked ${activity.itemName}`;
+      case "deleted_item":
+        return `${userName} removed ${activity.itemName}`;
+      case "joined_group":
+        return `${userName} joined the group`;
+      case "left_group":
+        return `${userName} left the group`;
+      default:
+        return "";
+    }
+  };
+
+  const getTimeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
   };
 
   const selectedGroup = groups.find((group) => group._id === selectedGroupId);
@@ -256,9 +337,6 @@ function ListComponent() {
                         >
                           <input
                             type="checkbox"
-                            onClick={() =>
-                              handleToggle(item._id, item.isComplete)
-                            }
                             checked={item.isComplete}
                             onChange={() =>
                               handleToggle(item._id, item.isComplete)
@@ -304,6 +382,7 @@ function ListComponent() {
                   </ul>
                 )}
               </div>
+
               <div className="add-item-form">
                 <p className="tip-text">
                   Tip: Click the checkbox to mark an item as bought. Completed
@@ -324,23 +403,41 @@ function ListComponent() {
               <div className="section-header">
                 <h4>Activity Log</h4>
                 <div className="activity-view-options">
-                  <button className="btn-link">View all</button>
+                  <button
+                    className="btn-link"
+                    onClick={() => setIsActivityModalOpen(true)}
+                  >
+                    View all
+                  </button>
                 </div>
               </div>
-              <ul className="activity-list">
-                <li>
-                  <img src="https://i.pravatar.cc/30?u=renee" alt="User" />
-                  <p>
-                    <b>Renee</b> marked Milk as bought <span>2m ago</span>
-                  </p>
-                </li>
-                <li>
-                  <img src="https://i.pravatar.cc/30?u=jay" alt="User" />
-                  <p>
-                    <b>Jay</b> added Paper towels <span>15m ago</span>
-                  </p>
-                </li>
-              </ul>
+              {activities.length === 0 ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    color: "var(--medium-gray)",
+                    padding: "20px 0",
+                    fontSize: "14px",
+                  }}
+                >
+                  No recent activities
+                </p>
+              ) : (
+                <ul className="activity-list">
+                  {activities.map((activity) => (
+                    <li key={activity._id}>
+                      <img
+                        src={`https://i.pravatar.cc/30?u=${activity.user}`}
+                        alt="User"
+                      />
+                      <p>
+                        {getActivityText(activity)}
+                        <span>{getTimeAgo(activity.createdAt)}</span>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="members-section">
               <div className="section-header">
@@ -395,10 +492,18 @@ function ListComponent() {
           inviteToken={selectedGroup.inviteToken}
         />
       )}
+
       <CreateGroupModal
         isOpen={isCreateGroupModalOpen}
         onClose={() => setIsCreateGroupModalOpen(false)}
         onGroupCreated={handleGroupCreated}
+      />
+
+      <ActivityModal
+        isOpen={isActivityModalOpen}
+        onClose={() => setIsActivityModalOpen(false)}
+        groupId={selectedGroupId}
+        currentUserId={currentUserId}
       />
     </div>
   );
