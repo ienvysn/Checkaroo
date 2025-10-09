@@ -134,7 +134,7 @@ const ActivityModal = ({ isOpen, onClose, groupId, currentUserId }) => {
               {activities.map((activity) => (
                 <li key={activity._id} className="activity-modal-item">
                   <img
-                    src={`https://i.pravatar.cc/40?u=${activity.user}`}
+                    src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${activity.user}`}
                     alt="User"
                     className="activity-modal-avatar"
                   />

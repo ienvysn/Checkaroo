@@ -254,7 +254,7 @@ function ListComponent() {
                 onClick={() => handleGroupClick(group._id)}
               >
                 <img
-                  src={`https://i.pravatar.cc/30?u=${group._id}`}
+                  src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${group._id}`}
                   alt="Group"
                 />
                 <span>{group.name}</span>
@@ -483,7 +483,7 @@ function ListComponent() {
                   {activities.map((activity) => (
                     <li key={activity._id}>
                       <img
-                        src={`https://i.pravatar.cc/30?u=${activity.user}`}
+                        src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${activity.user}`}
                         alt="User"
                       />
                       <p>
@@ -510,7 +510,7 @@ function ListComponent() {
                   selectedGroup.members.map((member) => (
                     <li key={member._id}>
                       <img
-                        src={`https://i.pravatar.cc/30?u=${member._id}`}
+                        src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${member._id}`}
                         alt="User"
                       />
                       <div className="member-info">

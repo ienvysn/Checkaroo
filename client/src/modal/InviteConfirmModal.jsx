@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { getInviteInfo, joinGroup } from "../api";
 import { useToast } from "../Toast";
-import "./InviteConfirmModal.css";
 import useEscapeKey from "../hooks/useEscKey";
+import "./InviteConfirmModal.css";
 
 const InviteConfirmModal = ({
   isOpen,
@@ -15,7 +15,7 @@ const InviteConfirmModal = ({
   const [error, setError] = useState("");
   const [joining, setJoining] = useState(false);
   const { showSuccess, showError } = useToast();
-  useEscapeKey(isOpen, onClose);
+
   useEffect(() => {
     if (isOpen && inviteToken) {
       fetchGroupInfo();
@@ -72,6 +72,9 @@ const InviteConfirmModal = ({
     onClose();
   };
 
+  // Add escape key functionality
+  useEscapeKey(isOpen, handleDecline);
+
   if (!isOpen) return null;
 
   return (
@@ -116,7 +119,7 @@ const InviteConfirmModal = ({
             <>
               <div className="group-info">
                 <img
-                  src={`https://i.pravatar.cc/64?u=${groupInfo._id}`}
+                  src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${groupInfo._id}`}
                   alt="Group"
                   className="group-avatar"
                 />

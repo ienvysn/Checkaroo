@@ -246,7 +246,7 @@ const GroupSettingsModal = ({
                 {group.members?.map((member) => (
                   <li key={member._id} className="member-item-settings">
                     <img
-                      src={`https://i.pravatar.cc/40?u=${member._id}`}
+                      src={`https://api.dicebear.com/7.x/big-ears/svg?seed=${member._id}`}
                       alt={member.username}
                       className="member-avatar-settings"
                     />
