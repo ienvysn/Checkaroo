@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { getInviteInfo, joinGroup } from "./api";
-import { useToast } from "./Toast";
+import { getInviteInfo, joinGroup } from "../api";
+import { useToast } from "../Toast";
 import "./InviteConfirmModal.css";
-import useEscapeKey from "./hooks/useEscKey";
+import useEscapeKey from "../hooks/useEscKey";
 
 const InviteConfirmModal = ({
   isOpen,

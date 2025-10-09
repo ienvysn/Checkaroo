@@ -7,10 +7,12 @@ import {
   deleteItem,
   getRecentActivities,
 } from "../api";
-import AddItemModal from "../AddItemModal";
-import ShareGroupModal from "../shareGroupModal";
-import CreateGroupModal from "../CreateGroupModal";
-import ActivityModal from "../ActivityModal";
+import AddItemModal from "../modal/AddItemModal";
+import ShareGroupModal from "../modal/shareGroupModal";
+import CreateGroupModal from "../modal/CreateGroupModal";
+import ActivityModal from "../modal/ActivityModal";
+import ConfirmModal from "../modal/ConfirmModal";
+import GroupSettingsModal from "../modal/GroupSettingModal";
 
 function ListComponent() {
   const [items, setItems] = useState([]);
@@ -25,7 +27,10 @@ function ListComponent() {
   const [activities, setActivities] = useState([]);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-
+  // const [testModalOpen, setTestModalOpen] = useState(false);
+  // const [testModalType, setTestModalType] = useState("simple");
+  const [isGroupSettingsModalOpen, setIsGroupSettingsModalOpen] =
+    useState(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -131,11 +136,32 @@ function ListComponent() {
       alert("This is a personal list and cannot be shared.");
     }
   };
+  const handleGroupUpdated = () => {
+    fetchGroups();
+    fetchActivities();
+  };
 
+  const handleGroupDeleted = () => {
+    // Redirect to personal group
+    const personal = groups.find((g) => g.isPersonal);
+    if (personal) {
+      setSelectedGroupId(personal._id);
+    }
+
+    fetchGroups();
+  };
   const handleGroupClick = (groupId) => {
     setSelectedGroupId(groupId);
   };
 
+  const handleGroupLeft = () => {
+    const personal = groups.find((g) => g.isPersonal);
+    if (personal) {
+      setSelectedGroupId(personal._id);
+    }
+
+    fetchGroups();
+  };
   const handleGroupCreated = (newGroup) => {
     setGroups([...groups, newGroup]);
     setSelectedGroupId(newGroup._id);
@@ -246,10 +272,11 @@ function ListComponent() {
           <button className="btn-primary" onClick={handleShareClick}>
             Invite
           </button>
+
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
         </div>
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
       </nav>
 
       <div className="main-view">
@@ -264,6 +291,35 @@ function ListComponent() {
                 ? `${selectedGroup.members.length} members`
                 : "1 member"}
             </span>
+            {/* Settings button only show for non-personal groups */}
+            {selectedGroup && !selectedGroup.isPersonal && (
+              <button
+                className="btn-icon"
+                onClick={() => setIsGroupSettingsModalOpen(true)}
+                title="Group Settings"
+                style={{ marginLeft: "8px" }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  style={{ width: "20px", height: "20px" }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         </header>
 
@@ -504,6 +560,15 @@ function ListComponent() {
         onClose={() => setIsActivityModalOpen(false)}
         groupId={selectedGroupId}
         currentUserId={currentUserId}
+      />
+      <GroupSettingsModal
+        isOpen={isGroupSettingsModalOpen}
+        onClose={() => setIsGroupSettingsModalOpen(false)}
+        group={selectedGroup}
+        currentUserId={currentUserId}
+        onGroupUpdated={handleGroupUpdated}
+        onGroupDeleted={handleGroupDeleted}
+        onGroupLeft={handleGroupLeft}
       />
     </div>
   );

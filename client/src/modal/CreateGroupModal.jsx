@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { createGroup } from "./api";
-import { useToast } from "./Toast";
-import useEscapeKey from "./hooks/useEscKey";
+import { createGroup } from "../api";
+import { useToast } from "../Toast";
+import useEscapeKey from "../hooks/useEscKey";
 import "./CreateGroupModal.css";
 
 const CreateGroupModal = ({ isOpen, onClose, onGroupCreated }) => {

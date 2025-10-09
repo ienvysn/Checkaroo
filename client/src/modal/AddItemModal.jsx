@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./AddItemModal";
 import "./AddItemModal.css";
-import useEscapeKey from "./hooks/useEscKey";
+import useEscapeKey from "../hooks/useEscKey";
 
 const AddItemModal = ({ isOpen, onClose, onAddItem }) => {
   const handleCancel = () => {

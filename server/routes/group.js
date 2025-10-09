@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const itemRoutes = require("./items");
-const { protect } = require("../middleware/authMiddleware");
 const activityRoutes = require("./activity");
+const { protect } = require("../middleware/authMiddleware");
 const {
   createGroup,
   deleteGroup,
@@ -11,6 +11,8 @@ const {
   joinGroup,
   joinGroupWithToken,
   leaveGroup,
+  updateGroupName,
+  removeMember,
 } = require("../controllers/groupController");
 
 router.post("/", protect, createGroup);
@@ -25,10 +27,16 @@ router.get("/invite/:token", joinGroupWithToken);
 
 router.post("/:id/leave", protect, leaveGroup);
 
+router.put("/:id/name", protect, updateGroupName);
+
+router.delete("/:id/members/:userId", protect, removeMember);
+
 router.delete("/:id", protect, deleteGroup);
 
-// ANy request in this route will use itemroutes. so groups/groupid/items/itemid
+// Activity routes
 router.use("/:groupId/activities", activityRoutes);
+
+// Item routes
 router.use("/:groupId/items", itemRoutes);
 
 module.exports = router;

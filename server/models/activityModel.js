@@ -21,6 +21,8 @@ const ActivitySchema = new mongoose.Schema(
         "deleted_item",
         "joined_group",
         "left_group",
+        "edited_group_name",
+        "removed_member",
       ],
     },
     itemName: {
@@ -34,12 +36,13 @@ const ActivitySchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      expires: 604800,
+      expires: 604800, // Auto-delete after 7 days (in seconds)
     },
   },
   { timestamps: true }
 );
 
+// for fastwr quires
 ActivitySchema.index({ group: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Activity", ActivitySchema);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import Login from "./Login";
 import ListComponent from "./component/ListComponent";
-import InviteConfirmModal from "./InviteConfirmModal";
+import InviteConfirmModal from "./modal/InviteConfirmModal";
 import { ToastProvider } from "./Toast";
 
 function App() {

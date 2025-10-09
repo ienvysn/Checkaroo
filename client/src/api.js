@@ -56,3 +56,10 @@ export const getActivities = (groupId) =>
   API.get(`/groups/${groupId}/activities`);
 export const getRecentActivities = (groupId) =>
   API.get(`/groups/${groupId}/activities/recent`);
+
+/* ------------------- Group Management ------------------- */
+export const updateGroupName = (groupId, name) =>
+  API.put(`/groups/${groupId}/name`, { name });
+export const removeMember = (groupId, userId) =>
+  API.delete(`/groups/${groupId}/members/${userId}`);
+export const leaveGroup = (groupId) => API.post(`/groups/${groupId}/leave`);

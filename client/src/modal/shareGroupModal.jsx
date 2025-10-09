@@ -1,7 +1,7 @@
 import React from "react";
 import "./ShareGroupModal.css";
-import { useToast } from "./Toast";
-import useEscapeKey from "./hooks/useEscKey";
+import { useToast } from "../Toast";
+import useEscapeKey from "../hooks/useEscKey";
 
 const ShareGroupModal = ({
   isOpen,
