@@ -14,7 +14,9 @@ const getItems = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    const items = await Item.find({ group: groupId });
+    const items = await Item.find({ group: groupId })
+      .populate("assignedTo", "username")
+      .populate("createdBy", "username");
     res.json(items);
   } catch (err) {
     console.error(err.message);
@@ -24,7 +26,9 @@ const getItems = async (req, res) => {
 
 const getItemById = async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id);
+    const item = await Item.findById(req.params.id)
+      .populate("assignedTo", "username")
+      .populate("createdBy", "username");
     if (!item) return res.status(404).json({ message: "Item not found" });
 
     const group = await Group.findById(item.group);
@@ -41,7 +45,7 @@ const getItemById = async (req, res) => {
 
 const createItem = async (req, res) => {
   try {
-    const { name, quantity } = req.body;
+    const { name, quantity, assignedTo } = req.body;
     const { groupId } = req.params;
 
     const group = await Group.findById(groupId);
@@ -56,11 +60,14 @@ const createItem = async (req, res) => {
       quantity: quantity || 1,
       group: groupId,
       createdBy: req.user._id,
+      assignedTo: assignedTo || null,
     });
 
     await newItem.save();
+    await newItem.populate("assignedTo", "username");
+    await newItem.populate("createdBy", "username");
 
-    // Log activity
+    // Log activity for adding item
     await createActivity(
       req.user._id,
       req.user.username,
@@ -69,6 +76,21 @@ const createItem = async (req, res) => {
       name
     );
 
+    if (assignedTo) {
+      const assignedUser = await require("../models/userModel").findById(
+        assignedTo
+      );
+      if (assignedUser) {
+        await createActivity(
+          req.user._id,
+          req.user.username,
+          "assigned_item",
+          groupId,
+          `${name} to ${assignedUser.username}`
+        );
+      }
+    }
+
     res.status(201).json(newItem);
   } catch (err) {
     console.error(err.message);
@@ -76,11 +98,12 @@ const createItem = async (req, res) => {
   }
 };
 
-// Update (toggle complete) an item
+// Update item
 const updateItem = async (req, res) => {
   try {
-    console.log("update item is being called");
-    const item = await Item.findById(req.params.id);
+    const item = await Item.findById(req.params.id)
+      .populate("assignedTo", "username")
+      .populate("createdBy", "username");
     if (!item) return res.status(404).json({ msg: "Item not found" });
 
     const group = await Group.findById(item.group);
@@ -88,18 +111,88 @@ const updateItem = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    item.isComplete = !item.isComplete;
-    await item.save();
+    const { isComplete, name, quantity, assignedTo } = req.body;
 
-    // Log activity
-    const action = item.isComplete ? "marked_complete" : "marked_incomplete";
-    await createActivity(
-      req.user._id,
-      req.user.username,
-      action,
-      item.group,
-      item.name
-    );
+    //  toggle
+    if (isComplete !== undefined) {
+      item.isComplete = isComplete;
+      await item.save();
+      await item.populate("assignedTo", "username");
+      await item.populate("createdBy", "username");
+
+      const action = item.isComplete ? "marked_complete" : "marked_incomplete";
+      await createActivity(
+        req.user._id,
+        req.user.username,
+        action,
+        item.group,
+        item.name
+      );
+
+      return res.json(item);
+    }
+
+    let activityMessages = [];
+
+    if (name && name !== item.name) {
+      const oldName = item.name;
+      item.name = name;
+      activityMessages.push(`renamed "${oldName}" to "${name}"`);
+    }
+
+    if (quantity && quantity !== item.quantity) {
+      item.quantity = quantity;
+    }
+
+    //  assignment change
+    if (assignedTo !== undefined) {
+      const oldAssignedTo = item.assignedTo?._id?.toString();
+      const newAssignedTo = assignedTo;
+
+      if (oldAssignedTo !== newAssignedTo) {
+        item.assignedTo = assignedTo || null;
+
+        if (!assignedTo) {
+          // Unassigned
+          await createActivity(
+            req.user._id,
+            req.user.username,
+            "unassigned_item",
+            item.group,
+            item.name
+          );
+        } else {
+          // Assigned or reassigned
+          const assignedUser = await require("../models/userModel").findById(
+            assignedTo
+          );
+          if (assignedUser) {
+            await createActivity(
+              req.user._id,
+              req.user.username,
+              "assigned_item",
+              item.group,
+              `${item.name} to ${assignedUser.username}`
+            );
+          }
+        }
+      }
+    }
+
+    await item.save();
+    await item.populate("assignedTo", "username");
+    await item.populate("createdBy", "username");
+
+    // Log edit activity if name or quantity changed
+    if (activityMessages.length > 0) {
+      await createActivity(
+        req.user._id,
+        req.user.username,
+        "edited_item",
+        item.group,
+        item.name
+      );
+    }
 
     res.json(item);
   } catch (err) {

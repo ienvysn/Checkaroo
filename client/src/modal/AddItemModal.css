@@ -188,3 +188,20 @@
     justify-content: center;
   }
 }
+
+.form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: white;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}

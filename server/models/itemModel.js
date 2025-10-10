@@ -18,10 +18,15 @@ const ItemSchema = new mongoose.Schema({
     default: Date.now,
   },
   assignedTo: {
-    type: String,
-    default: false,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
   },
-
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   group: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Group",

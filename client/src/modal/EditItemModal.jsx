@@ -1,45 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useEscapeKey from "./hooks/useEscapeKey";
 import "./AddItemModal.css";
 
-const AddItemModal = ({ isOpen, onClose, onAddItem, groupMembers }) => {
+const EditItemModal = ({ isOpen, onClose, onEditItem, item, groupMembers }) => {
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [assignedTo, setAssignedTo] = useState("");
+
+  useEffect(() => {
+    if (item) {
+      setItemName(item.name || "");
+      setQuantity(item.quantity?.toString() || "1");
+      setAssignedTo(item.assignedTo?._id || "");
+    }
+  }, [item]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!itemName.trim()) return;
 
-    onAddItem({
+    onEditItem(item._id, {
       name: itemName.trim(),
       quantity: parseInt(quantity) || 1,
       assignedTo: assignedTo || null,
     });
 
-    // Reset form
-    setItemName("");
-    setQuantity("1");
-    setAssignedTo("");
     onClose();
   };
 
   const handleCancel = () => {
-    setItemName("");
-    setQuantity("1");
-    setAssignedTo("");
     onClose();
   };
 
   useEscapeKey(isOpen, handleCancel);
 
-  if (!isOpen) return null;
+  if (!isOpen || !item) return null;
 
   return (
     <div className="modal-overlay" onClick={handleCancel}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Add item to list</h3>
+          <h3>Edit item</h3>
           <button className="modal-close-btn" onClick={handleCancel}>
             ×
           </button>
@@ -86,17 +87,12 @@ const AddItemModal = ({ isOpen, onClose, onAddItem, groupMembers }) => {
             </select>
           </div>
 
-          <p className="form-help-text">
-            Assign items to members or leave unassigned. You can edit details
-            later.
-          </p>
-
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={handleCancel}>
               Cancel
             </button>
             <button type="submit" className="btn-add-item">
-              <span>+</span> Add item
+              Save changes
             </button>
           </div>
         </form>
@@ -105,4 +101,4 @@ const AddItemModal = ({ isOpen, onClose, onAddItem, groupMembers }) => {
   );
 };
 
-export default AddItemModal;
+export default EditItemModal;

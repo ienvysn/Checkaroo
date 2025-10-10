@@ -1,5 +1,3 @@
-const mongoose = require("mongoose");
-
 const ActivitySchema = new mongoose.Schema(
   {
     user: {
@@ -23,6 +21,9 @@ const ActivitySchema = new mongoose.Schema(
         "left_group",
         "edited_group_name",
         "removed_member",
+        "assigned_item",
+        "unassigned_item",
+        "edited_item",
       ],
     },
     itemName: {
@@ -36,13 +37,12 @@ const ActivitySchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      expires: 604800, // Auto-delete after 7 days (in seconds)
+      expires: 604800,
     },
   },
   { timestamps: true }
 );
 
-// for fastwr quires
 ActivitySchema.index({ group: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Activity", ActivitySchema);

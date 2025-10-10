@@ -521,7 +521,6 @@ function ListComponent() {
                             : "Member"}
                         </small>
                       </div>
-                      <button className="btn-icon">...</button>
                     </li>
                   ))}
               </ul>

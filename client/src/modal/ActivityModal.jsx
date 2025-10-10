@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getActivities } from "../api";
-import useEscapeKey from "../hooks/useEscKey";
+import { getActivities } from "./api";
+import useEscapeKey from "./hooks/useEscapeKey";
 import "./ActivityModal.css";
 
 const ActivityModal = ({ isOpen, onClose, groupId, currentUserId }) => {
@@ -73,6 +73,27 @@ const ActivityModal = ({ isOpen, onClose, groupId, currentUserId }) => {
         return (
           <>
             <span className="user-highlight">{userName}</span> left the group
+          </>
+        );
+      case "assigned_item":
+        return (
+          <>
+            <span className="user-highlight">{userName}</span> assigned{" "}
+            <span className="item-highlight">{activity.itemName}</span>
+          </>
+        );
+      case "unassigned_item":
+        return (
+          <>
+            <span className="user-highlight">{userName}</span> unassigned{" "}
+            <span className="item-highlight">{activity.itemName}</span>
+          </>
+        );
+      case "edited_item":
+        return (
+          <>
+            <span className="user-highlight">{userName}</span> edited{" "}
+            <span className="item-highlight">{activity.itemName}</span>
           </>
         );
       default:
