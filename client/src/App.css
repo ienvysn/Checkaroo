@@ -567,3 +567,36 @@ h4 {
   width: 16px;
   height: 16px;
 }
+/* Add this to your App.css file for edit button styling */
+
+.btn-edit {
+  background: none !important;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--primary-blue) !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-edit:hover {
+  background-color: var(--light-blue) !important;
+}
+
+.btn-edit svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--primary-blue) !important;
+  stroke: var(--primary-blue) !important;
+}
+
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}

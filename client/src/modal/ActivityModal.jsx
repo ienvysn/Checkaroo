@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getActivities } from "./api";
-import useEscapeKey from "./hooks/useEscapeKey";
+import { getActivities } from "../api";
+import useEscapeKey from "../hooks/useEscKey";
 import "./ActivityModal.css";
 
 const ActivityModal = ({ isOpen, onClose, groupId, currentUserId }) => {

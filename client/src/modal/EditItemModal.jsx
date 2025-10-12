@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import useEscapeKey from "./hooks/useEscapeKey";
+import useEscapeKey from "../hooks/useEscKey";
 import "./AddItemModal.css";
 
 const EditItemModal = ({ isOpen, onClose, onEditItem, item, groupMembers }) => {

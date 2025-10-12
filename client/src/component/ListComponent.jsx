@@ -8,10 +8,10 @@ import {
   getRecentActivities,
 } from "../api";
 import AddItemModal from "../modal/AddItemModal";
+import EditItemModal from "../modal/EditItemModal";
 import ShareGroupModal from "../modal/shareGroupModal";
 import CreateGroupModal from "../modal/CreateGroupModal";
 import ActivityModal from "../modal/ActivityModal";
-import ConfirmModal from "../modal/ConfirmModal";
 import GroupSettingsModal from "../modal/GroupSettingModal";
 
 function ListComponent() {
@@ -22,15 +22,16 @@ function ListComponent() {
       localStorage.getItem("personalGroupId")
   );
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const [activities, setActivities] = useState([]);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-  // const [testModalOpen, setTestModalOpen] = useState(false);
-  // const [testModalType, setTestModalType] = useState("simple");
   const [isGroupSettingsModalOpen, setIsGroupSettingsModalOpen] =
     useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -109,6 +110,18 @@ function ListComponent() {
     });
   };
 
+  const handleEditItem = (itemId, updatedData) => {
+    updateItem(selectedGroupId, itemId, updatedData).then((res) => {
+      setItems(items.map((item) => (item._id === itemId ? res.data : item)));
+      fetchActivities();
+    });
+  };
+
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+    setIsEditItemModalOpen(true);
+  };
+
   const handleToggle = (id, isComplete) => {
     updateItem(selectedGroupId, id, { isComplete: !isComplete }).then((res) => {
       setItems(items.map((item) => (item._id === id ? res.data : item)));
@@ -136,22 +149,28 @@ function ListComponent() {
       alert("This is a personal list and cannot be shared.");
     }
   };
+
+  const handleGroupClick = (groupId) => {
+    setSelectedGroupId(groupId);
+  };
+
+  const handleGroupCreated = (newGroup) => {
+    setGroups([...groups, newGroup]);
+    setSelectedGroupId(newGroup._id);
+    localStorage.setItem("selectedGroupId", newGroup._id);
+  };
+
   const handleGroupUpdated = () => {
     fetchGroups();
     fetchActivities();
   };
 
   const handleGroupDeleted = () => {
-    // Redirect to personal group
     const personal = groups.find((g) => g.isPersonal);
     if (personal) {
       setSelectedGroupId(personal._id);
     }
-
     fetchGroups();
-  };
-  const handleGroupClick = (groupId) => {
-    setSelectedGroupId(groupId);
   };
 
   const handleGroupLeft = () => {
@@ -159,13 +178,7 @@ function ListComponent() {
     if (personal) {
       setSelectedGroupId(personal._id);
     }
-
     fetchGroups();
-  };
-  const handleGroupCreated = (newGroup) => {
-    setGroups([...groups, newGroup]);
-    setSelectedGroupId(newGroup._id);
-    localStorage.setItem("selectedGroupId", newGroup._id);
   };
 
   const getActivityText = (activity) => {
@@ -185,6 +198,12 @@ function ListComponent() {
         return `${userName} joined the group`;
       case "left_group":
         return `${userName} left the group`;
+      case "assigned_item":
+        return `${userName} assigned ${activity.itemName}`;
+      case "unassigned_item":
+        return `${userName} unassigned ${activity.itemName}`;
+      case "edited_item":
+        return `${userName} edited ${activity.itemName}`;
       default:
         return "";
     }
@@ -272,11 +291,10 @@ function ListComponent() {
           <button className="btn-primary" onClick={handleShareClick}>
             Invite
           </button>
-
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
         </div>
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
       </nav>
 
       <div className="main-view">
@@ -291,7 +309,6 @@ function ListComponent() {
                 ? `${selectedGroup.members.length} members`
                 : "1 member"}
             </span>
-            {/* Settings button only show for non-personal groups */}
             {selectedGroup && !selectedGroup.isPersonal && (
               <button
                 className="btn-icon"
@@ -335,7 +352,7 @@ function ListComponent() {
                   <span />
                   <span>Item</span>
                   <span>Quantity</span>
-                  <span>Added/Assigned</span>
+                  <span>Assigned To</span>
                   <span className="header-actions">Actions</span>
                 </div>
 
@@ -411,12 +428,39 @@ function ListComponent() {
                           <span className="item-quantity">
                             x{item.quantity}
                           </span>
-                          <span className="item-added-by">added by You</span>
+                          <span className="item-added-by">
+                            {item.assignedTo
+                              ? item.assignedTo._id === currentUserId
+                                ? "You"
+                                : item.assignedTo.username
+                              : "Unassigned"}
+                          </span>
                           <div className="item-actions">
+                            <button
+                              type="button"
+                              className="btn-icon btn-edit"
+                              onClick={() => handleEditClick(item)}
+                              title="Edit item"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                                />
+                              </svg>
+                            </button>
                             <button
                               type="button"
                               className="btn-icon btn-delete"
                               onClick={() => handleDelete(item._id)}
+                              title="Delete item"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -521,6 +565,7 @@ function ListComponent() {
                             : "Member"}
                         </small>
                       </div>
+                      <button className="btn-icon">...</button>
                     </li>
                   ))}
               </ul>
@@ -536,6 +581,15 @@ function ListComponent() {
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         onAddItem={handleAddFromModal}
+        groupMembers={selectedGroup?.members || []}
+      />
+
+      <EditItemModal
+        isOpen={isEditItemModalOpen}
+        onClose={() => setIsEditItemModalOpen(false)}
+        onEditItem={handleEditItem}
+        item={editingItem}
+        groupMembers={selectedGroup?.members || []}
       />
 
       {selectedGroup && (
@@ -560,6 +614,7 @@ function ListComponent() {
         groupId={selectedGroupId}
         currentUserId={currentUserId}
       />
+
       <GroupSettingsModal
         isOpen={isGroupSettingsModalOpen}
         onClose={() => setIsGroupSettingsModalOpen(false)}
