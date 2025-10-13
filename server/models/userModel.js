@@ -32,6 +32,12 @@ const UserSchema = new mongoose.Schema(
       enum: ["local", "google"],
       default: "local",
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
@@ -47,6 +53,19 @@ UserSchema.pre("save", async function (next) {
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   if (!this.password) return false; // OAuth users don't have password
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+UserSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return resetToken;
 };
 
 module.exports = mongoose.model("User", UserSchema);
