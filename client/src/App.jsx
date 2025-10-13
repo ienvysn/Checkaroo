@@ -11,12 +11,27 @@ function App() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Check for invite token in URL
+    // Check if this is OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get("token");
+    const personalGroup = urlParams.get("personalGroup");
+
+    if (oauthToken) {
+      // OAuth success - save token and reload
+      localStorage.setItem("token", oauthToken);
+      if (personalGroup) {
+        localStorage.setItem("personalGroupId", personalGroup);
+      }
+      // Clean URL and reload
+      window.history.replaceState({}, "", "/");
+      window.location.reload();
+      return;
+    }
+
+    // Check for invite token
     const urlInviteToken = urlParams.get("inviteToken");
 
     if (urlInviteToken && token) {
-      // User is logged in and has invite token show modal
       setInviteToken(urlInviteToken);
       setShowInviteModal(true);
     }
@@ -28,8 +43,6 @@ function App() {
     window.history.replaceState({}, "", url);
 
     console.log("Successfully joined group:", groupInfo.name);
-
-    // Refresh the page to update the groups list
     window.location.reload();
   };
 

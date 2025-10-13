@@ -1,12 +1,13 @@
+require("dotenv").config(); // THIS SHOULD BE AT THE TOPPP
 const express = require("express");
 const mongoose = require("mongoose");
+const passport = require("passport");
 const itemRoutes = require("./routes/items");
 const authRoutes = require("./routes/auth");
 const groupRoutes = require("./routes/group");
 const activityRoutes = require("./routes/activity");
 const app = express();
 const cors = require("cors");
-require("dotenv").config();
 
 const PORT = 5000;
 const MONGO_URI = "mongodb://localhost:27017/sharelist";
@@ -14,7 +15,7 @@ const MONGO_URI = "mongodb://localhost:27017/sharelist";
 // Middleware
 app.use(cors());
 app.use(express.json());
-
+app.use(passport.initialize());
 // Connect to MongoDB
 mongoose
   .connect(MONGO_URI)

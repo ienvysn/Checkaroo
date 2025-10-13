@@ -66,7 +66,10 @@ const Login = () => {
       console.error("Login error:", err);
     }
   };
-
+  const handleGoogleLogin = () => {
+    // Redirect to backend OAuth route
+    window.location.href = "http://localhost:5000/api/auth/google";
+  };
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
@@ -227,7 +230,7 @@ const Login = () => {
             <div className="divider">or</div>
 
             <div className="social-login">
-              <button className="social-btn">
+              <button className="social-btn" onClick={handleGoogleLogin}>
                 <img
                   src="https://img.icons8.com/color/16/000000/google-logo.png"
                   alt="Google"
