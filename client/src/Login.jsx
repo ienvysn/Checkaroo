@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
+import ForgotPasswordModal from "./modal/ForgotPasswordModal";
 import { loginUser, registerUser, getInviteInfo, joinGroup } from "./api";
 
 const Login = () => {
@@ -8,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -178,7 +180,11 @@ const Login = () => {
                   />
                 </div>
                 <div className="password-header">
-                  <button type="button" className="link-button">
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => setIsForgotPasswordOpen(true)}
+                  >
                     Forgot password?
                   </button>
                 </div>
@@ -258,6 +264,10 @@ const Login = () => {
           <p className="right-subtitle">Collaborate with family and friends</p>
         </div>
       </div>
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+      />
     </div>
   );
 };
