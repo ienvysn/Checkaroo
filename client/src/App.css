@@ -272,7 +272,7 @@ input[type="text"] {
 }
 .item-list-header {
   display: grid;
-  grid-template-columns: 40px 2fr 1fr 1fr 1fr;
+  grid-template-columns: 32px 40px 2fr 1fr 1fr 1fr;
   gap: 16px;
   padding: 0 16px 8px 16px;
   font-size: 12px;
@@ -286,7 +286,7 @@ input[type="text"] {
 }
 .item-list li {
   display: grid;
-  grid-template-columns: 40px 2fr 1fr 1fr 1fr;
+  grid-template-columns: 32px 40px 2fr 1fr 1fr 1fr;
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
@@ -599,4 +599,42 @@ h4 {
   display: flex;
   justify-content: flex-end;
   gap: 4px;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--medium-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: var(--dark-gray);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle.disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.item-dragging {
+  opacity: 0.5;
+  background-color: var(--light-blue);
+}
+
+.item-drag-overlay {
+  background-color: white;
+  border: 2px solid var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

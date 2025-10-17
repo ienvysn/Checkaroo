@@ -7,6 +7,27 @@ import {
   deleteItem,
   getRecentActivities,
 } from "../api";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  getItemOrder,
+  saveItemOrder,
+  addItemToOrder,
+  removeItemFromOrder,
+  applyOrderToItems,
+} from "../utils/itemOrderStorage";
 import AddItemModal from "../modal/AddItemModal";
 import EditItemModal from "../modal/EditItemModal";
 import ShareGroupModal from "../modal/shareGroupModal";
@@ -29,8 +50,17 @@ function ListComponent() {
   const [activities, setActivities] = useState([]);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
   const [isGroupSettingsModalOpen, setIsGroupSettingsModalOpen] =
     useState(false);
+  const [activeId, setActiveId] = useState(null);
+  const [orderedItemIds, setOrderedItemIds] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,10 +103,14 @@ function ListComponent() {
   };
 
   const fetchItems = async () => {
-    if (selectedGroupId) {
+    if (selectedGroupId && currentUserId) {
       try {
         const res = await getItems(selectedGroupId);
         setItems(res.data);
+
+        const savedOrder = getItemOrder(selectedGroupId, currentUserId);
+        setOrderedItemIds(savedOrder);
+        console.log("Loaded order for group:", savedOrder);
       } catch (err) {
         console.error("Failed to fetch items:", err);
       }
@@ -99,24 +133,35 @@ function ListComponent() {
   }, []);
 
   useEffect(() => {
-    fetchItems();
-    fetchActivities();
-  }, [selectedGroupId]);
+    if (currentUserId) {
+      fetchItems();
+      fetchActivities();
+    }
+  }, [selectedGroupId, currentUserId]);
 
   const handleAddFromModal = (itemData) => {
     addItem(selectedGroupId, itemData).then((res) => {
       setItems([...items, res.data]);
       fetchActivities();
+
+      if (currentUserId) {
+        const newOrder = addItemToOrder(
+          selectedGroupId,
+          currentUserId,
+          res.data._id,
+          "top"
+        );
+        setOrderedItemIds(newOrder);
+        console.log("New item added to top");
+      }
     });
   };
-
   const handleEditItem = (itemId, updatedData) => {
     updateItem(selectedGroupId, itemId, updatedData).then((res) => {
       setItems(items.map((item) => (item._id === itemId ? res.data : item)));
       fetchActivities();
     });
   };
-
   const handleEditClick = (item) => {
     setEditingItem(item);
     setIsEditItemModalOpen(true);
@@ -126,6 +171,23 @@ function ListComponent() {
     updateItem(selectedGroupId, id, { isComplete: !isComplete }).then((res) => {
       setItems(items.map((item) => (item._id === id ? res.data : item)));
       fetchActivities();
+
+      if (currentUserId) {
+        if (!isComplete) {
+          removeItemFromOrder(selectedGroupId, currentUserId, id);
+          setOrderedItemIds((prev) => prev.filter((itemId) => itemId !== id));
+          console.log("Item marked complete, removed from order");
+        } else {
+          const newOrder = addItemToOrder(
+            selectedGroupId,
+            currentUserId,
+            id,
+            "top"
+          );
+          setOrderedItemIds(newOrder);
+          console.log("Item marked incomplete, added to top");
+        }
+      }
     });
   };
 
@@ -133,6 +195,16 @@ function ListComponent() {
     deleteItem(selectedGroupId, id).then(() => {
       setItems(items.filter((item) => item._id !== id));
       fetchActivities();
+
+      if (currentUserId) {
+        const newOrder = removeItemFromOrder(
+          selectedGroupId,
+          currentUserId,
+          id
+        );
+        setOrderedItemIds(newOrder);
+        console.log("Item deleted, removed from order");
+      }
     });
   };
 
@@ -181,6 +253,221 @@ function ListComponent() {
     fetchGroups();
   };
 
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+    console.log("Drag started:", event.active.id);
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const incompleteItems = items.filter((item) => !item.isComplete);
+      const orderedIncomplete = applyOrderToItems(
+        incompleteItems,
+        orderedItemIds
+      );
+
+      const oldIndex = orderedIncomplete.findIndex(
+        (item) => item._id === active.id
+      );
+      const newIndex = orderedIncomplete.findIndex(
+        (item) => item._id === over.id
+      );
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const itemsArray = [...orderedIncomplete];
+        const [movedItem] = itemsArray.splice(oldIndex, 1);
+        itemsArray.splice(newIndex, 0, movedItem);
+
+        const newOrder = itemsArray.map((item) => item._id);
+
+        setOrderedItemIds(newOrder);
+        saveItemOrder(selectedGroupId, currentUserId, newOrder);
+        console.log("New order saved:", newOrder);
+      }
+    }
+
+    setActiveId(null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
+  const SortableItem = ({ item }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: item._id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <li
+        ref={setNodeRef}
+        style={style}
+        className={isDragging ? "item-dragging" : ""}
+      >
+        <div className="drag-handle" {...attributes} {...listeners}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 9h16.5m-16.5 6.75h16.5"
+            />
+          </svg>
+        </div>
+        <input
+          type="checkbox"
+          checked={item.isComplete}
+          onChange={() => handleToggle(item._id, item.isComplete)}
+        />
+        <span className="item-name">{item.name}</span>
+        <span className="item-quantity">x{item.quantity}</span>
+        <span className="item-added-by">
+          {item.assignedTo
+            ? item.assignedTo._id === currentUserId
+              ? "You"
+              : item.assignedTo.username
+            : "Unassigned"}
+        </span>
+        <div className="item-actions">
+          <button
+            type="button"
+            className="btn-icon btn-edit"
+            onClick={() => handleEditClick(item)}
+            title="Edit item"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="btn-icon btn-delete"
+            onClick={() => handleDelete(item._id)}
+            title="Delete item"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+              />
+            </svg>
+          </button>
+        </div>
+      </li>
+    );
+  };
+
+  const CompletedItem = ({ item }) => {
+    return (
+      <li className="completed">
+        <div className="drag-handle disabled">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 9h16.5m-16.5 6.75h16.5"
+            />
+          </svg>
+        </div>
+        <input
+          type="checkbox"
+          checked={item.isComplete}
+          onChange={() => handleToggle(item._id, item.isComplete)}
+        />
+        <span className="item-name">{item.name}</span>
+        <span className="item-quantity">x{item.quantity}</span>
+        <span className="item-added-by">
+          {item.assignedTo
+            ? item.assignedTo._id === currentUserId
+              ? "You"
+              : item.assignedTo.username
+            : "Unassigned"}
+        </span>
+        <div className="item-actions">
+          <button
+            type="button"
+            className="btn-icon btn-edit"
+            onClick={() => handleEditClick(item)}
+            title="Edit item"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="btn-icon btn-delete"
+            onClick={() => handleDelete(item._id)}
+            title="Delete item"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+              />
+            </svg>
+          </button>
+        </div>
+      </li>
+    );
+  };
   const getActivityText = (activity) => {
     const isCurrentUser = activity.user === currentUserId;
     const userName = isCurrentUser ? "You" : activity.username;
@@ -350,6 +637,7 @@ function ListComponent() {
               <div className="item-list-container">
                 <div className="item-list-header">
                   <span />
+                  <span />
                   <span>Item</span>
                   <span>Quantity</span>
                   <span>Assigned To</span>
@@ -399,87 +687,92 @@ function ListComponent() {
                     </button>
                   </div>
                 ) : (
-                  <ul className="item-list">
-                    {items
-                      .slice()
-                      .sort((a, b) => a.isComplete - b.isComplete)
-                      .map((item) => (
-                        <li
-                          key={item._id}
-                          className={item.isComplete ? "completed" : ""}
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                  >
+                    {(() => {
+                      const incompleteItems = items.filter(
+                        (item) => !item.isComplete
+                      );
+                      const completedItems = items.filter(
+                        (item) => item.isComplete
+                      );
+
+                      const orderedIncomplete = applyOrderToItems(
+                        incompleteItems,
+                        orderedItemIds
+                      );
+
+                      return (
+                        <SortableContext
+                          items={orderedIncomplete.map((item) => item._id)}
+                          strategy={verticalListSortingStrategy}
                         >
-                          <input
-                            type="checkbox"
-                            checked={item.isComplete}
-                            onChange={() =>
-                              handleToggle(item._id, item.isComplete)
-                            }
-                          />
-                          <span
-                            className="item-name"
-                            style={{
-                              textDecoration: item.isComplete
-                                ? "line-through"
-                                : "none",
-                            }}
-                          >
-                            {item.name}
+                          <ul className="item-list">
+                            {orderedIncomplete.map((item) => (
+                              <SortableItem key={item._id} item={item} />
+                            ))}
+
+                            {completedItems.map((item) => (
+                              <CompletedItem key={item._id} item={item} />
+                            ))}
+                          </ul>
+                        </SortableContext>
+                      );
+                    })()}
+
+                    <DragOverlay>
+                      {activeId ? (
+                        <div
+                          style={{
+                            listStyle: "none",
+                            display: "grid",
+                            gridTemplateColumns: "32px 40px 2fr 1fr 1fr 1fr",
+                            alignItems: "center",
+                            gap: "16px",
+                            padding: "12px 16px",
+                            border: "1px solid var(--border-color)",
+                            borderRadius: "8px",
+                            backgroundColor: "white",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          }}
+                        >
+                          <div className="drag-handle">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3.75 9h16.5m-16.5 6.75h16.5"
+                              />
+                            </svg>
+                          </div>
+                          <input type="checkbox" disabled />
+                          <span className="item-name">
+                            {items.find((item) => item._id === activeId)?.name}
                           </span>
                           <span className="item-quantity">
-                            x{item.quantity}
+                            x
+                            {
+                              items.find((item) => item._id === activeId)
+                                ?.quantity
+                            }
                           </span>
-                          <span className="item-added-by">
-                            {item.assignedTo
-                              ? item.assignedTo._id === currentUserId
-                                ? "You"
-                                : item.assignedTo.username
-                              : "Unassigned"}
-                          </span>
-                          <div className="item-actions">
-                            <button
-                              type="button"
-                              className="btn-icon btn-edit"
-                              onClick={() => handleEditClick(item)}
-                              title="Edit item"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-icon btn-delete"
-                              onClick={() => handleDelete(item._id)}
-                              title="Delete item"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </li>
-                      ))}
-                  </ul>
+                          <span>...</span>
+                          <div>...</div>
+                        </div>
+                      ) : null}
+                    </DragOverlay>
+                  </DndContext>
                 )}
               </div>
 
