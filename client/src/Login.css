@@ -209,3 +209,59 @@
   text-align: center;
   font-size: 0.875rem;
 }
+[data-theme="dark"] .auth-container {
+  background-color: #111827;
+}
+
+[data-theme="dark"] .auth-left {
+  background-color: #1f2937;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .auth-right {
+  background-color: #111827;
+}
+
+[data-theme="dark"] .auth-right-container {
+  background-color: #1f2937;
+  border: 1px solid #4b5563;
+}
+
+[data-theme="dark"] .main-title,
+[data-theme="dark"] .right-title {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .welcome-text,
+[data-theme="dark"] .right-subtitle {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .toggle-btn {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .toggle-btn.active {
+  background-color: #374151;
+  color: #6366f1;
+}
+
+[data-theme="dark"] .input-group input {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .input-group input:focus {
+  border-color: #6366f1;
+}
+
+[data-theme="dark"] .social-btn {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .illustration-placeholder {
+  background-color: #374151;
+}

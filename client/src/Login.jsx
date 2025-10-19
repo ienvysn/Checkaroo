@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Login.css";
 import ForgotPasswordModal from "./modal/ForgotPasswordModal";
+import { getTheme, applyTheme } from "./utils/themeStorage";
 import { loginUser, registerUser, getInviteInfo, joinGroup } from "./api";
 
 const Login = () => {
@@ -10,7 +11,10 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
-
+  useEffect(() => {
+    const savedTheme = getTheme();
+    applyTheme(savedTheme);
+  }, []);
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
