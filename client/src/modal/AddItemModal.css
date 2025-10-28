@@ -205,3 +205,54 @@
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
+[data-theme="dark"] .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .modal-close-btn {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .modal-close-btn:hover {
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .form-group label {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-select {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-select:focus {
+  border-color: var(--primary-blue);
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .form-help-text {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .btn-cancel {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .btn-cancel:hover {
+  background-color: var(--light-gray);
+}

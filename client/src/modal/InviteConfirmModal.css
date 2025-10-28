@@ -202,3 +202,50 @@
     justify-content: center;
   }
 }
+[data-theme="dark"] .invite-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .invite-modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .invite-icon {
+  background-color: var(--light-blue);
+}
+
+[data-theme="dark"] .invite-header-content h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .invite-header-content p {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .group-info {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .group-name {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .group-members {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .invite-message {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .btn-decline {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .btn-decline:hover {
+  background-color: var(--light-gray);
+}

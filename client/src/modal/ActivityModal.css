@@ -166,3 +166,51 @@
     padding: 20px;
   }
 }
+[data-theme="dark"] .activity-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .activity-modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .activity-modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .activity-modal-close-btn {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .activity-modal-close-btn:hover {
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .activity-modal-item {
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .activity-modal-item:hover {
+  background-color: var(--background-color);
+}
+
+[data-theme="dark"] .activity-modal-text {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .activity-modal-time {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .activity-modal-empty-icon {
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .activity-modal-empty h4 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .activity-modal-empty p {
+  color: var(--medium-gray);
+}

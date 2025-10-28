@@ -173,7 +173,18 @@ const Login = () => {
                   />
                 </div>
                 <div className="input-group">
-                  <label htmlFor="password">Password</label>
+                  <div className="password-header">
+                    <label htmlFor="password">Password</label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        className="link-button"
+                        onClick={() => setIsForgotPasswordOpen(true)}
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="password"
                     id="password"
@@ -183,15 +194,7 @@ const Login = () => {
                     required
                   />
                 </div>
-                <div className="password-header">
-                  <button
-                    type="button"
-                    className="link-button"
-                    onClick={() => setIsForgotPasswordOpen(true)}
-                  >
-                    Forgot password?
-                  </button>
-                </div>
+
                 <button type="submit" className="continue-btn">
                   Continue
                 </button>

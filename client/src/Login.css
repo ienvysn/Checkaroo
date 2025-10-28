@@ -46,6 +46,7 @@
   border-radius: 8px;
   padding: 4px;
   margin-bottom: 1.5rem;
+  gap: 4px;
 }
 
 .toggle-btn {
@@ -56,7 +57,9 @@
   cursor: pointer;
   border-radius: 6px;
   font-weight: 500;
+  font-size: 0.9375rem;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  color: #6b7280;
 }
 
 .toggle-btn.active {
@@ -67,18 +70,28 @@
 
 .input-group {
   margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .input-group label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .password-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.password-header label {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .input-group input {
@@ -107,10 +120,10 @@
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  margin: 1rem 0;
+  margin-top: 1.5rem;
   transition: background-color 0.2s;
+  font-size: 0.9375rem;
 }
-
 .continue-btn:hover {
   background-color: #4338ca;
 }
@@ -140,8 +153,14 @@
   justify-content: center;
   gap: 0.5rem;
   font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s;
 }
 
+.social-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
 .social-btn img {
   width: 16px;
   height: 16px;
@@ -151,6 +170,8 @@
   font-size: 0.8rem;
   color: #6b7280;
   text-align: center;
+  margin-top: 1rem;
+  line-height: 1.4;
 }
 
 /* --- Right Pane (Illustration) --- */
@@ -209,59 +230,122 @@
   text-align: center;
   font-size: 0.875rem;
 }
+/* Dark Mode Styles */
 [data-theme="dark"] .auth-container {
-  background-color: #111827;
+  background-color: #0f172a;
 }
 
 [data-theme="dark"] .auth-left {
-  background-color: #1f2937;
-  color: #e5e7eb;
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 [data-theme="dark"] .auth-right {
-  background-color: #111827;
+  background-color: #0f172a;
 }
 
 [data-theme="dark"] .auth-right-container {
-  background-color: #1f2937;
-  border: 1px solid #4b5563;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .main-title,
+[data-theme="dark"] .main-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .welcome-text {
+  color: #94a3b8;
+}
+
 [data-theme="dark"] .right-title {
-  color: #e5e7eb;
+  color: #f1f5f9;
 }
 
-[data-theme="dark"] .welcome-text,
 [data-theme="dark"] .right-subtitle {
-  color: #9ca3af;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .toggle-buttons {
+  background-color: #0f172a;
 }
 
 [data-theme="dark"] .toggle-btn {
-  color: #9ca3af;
+  color: #94a3b8;
+  background-color: transparent;
 }
 
 [data-theme="dark"] .toggle-btn.active {
-  background-color: #374151;
-  color: #6366f1;
+  background-color: #1e293b;
+  color: #529cca;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .input-group label {
+  color: #e2e8f0;
 }
 
 [data-theme="dark"] .input-group input {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: #e5e7eb;
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .input-group input::placeholder {
+  color: #64748b;
 }
 
 [data-theme="dark"] .input-group input:focus {
-  border-color: #6366f1;
+  border-color: #529cca;
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .link-button {
+  color: #529cca;
+}
+
+[data-theme="dark"] .link-button:hover {
+  color: #6db3dd;
+}
+
+[data-theme="dark"] .continue-btn {
+  background-color: #529cca;
+}
+
+[data-theme="dark"] .continue-btn:hover {
+  background-color: #6db3dd;
+}
+
+[data-theme="dark"] .divider {
+  color: #64748b;
 }
 
 [data-theme="dark"] .social-btn {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: #e5e7eb;
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .social-btn:hover {
+  background-color: #1e293b;
+  border-color: #529cca;
+}
+
+[data-theme="dark"] .terms-text {
+  color: #94a3b8;
 }
 
 [data-theme="dark"] .illustration-placeholder {
-  background-color: #374151;
+  background-color: #0f172a;
+  color: #64748b;
+}
+
+[data-theme="dark"] .error-message {
+  color: #fca5a5;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #f87171;
+}
+
+[data-theme="dark"] .password-header {
+  color: #e2e8f0;
 }

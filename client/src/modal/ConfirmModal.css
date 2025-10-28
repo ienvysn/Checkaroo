@@ -242,3 +242,48 @@
     justify-content: center;
   }
 }
+[data-theme="dark"] .confirm-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .confirm-modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .confirm-modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-message {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-input-label {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-group-name-display {
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-input {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-input:focus {
+  border-color: var(--primary-blue);
+}
+
+[data-theme="dark"] .confirm-modal-btn-cancel {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .confirm-modal-btn-cancel:hover {
+  background-color: var(--light-gray);
+}

@@ -332,3 +332,64 @@
     justify-content: flex-end;
   }
 }
+[data-theme="dark"] .group-settings-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .group-settings-modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .group-settings-modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .group-settings-section-title {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .group-name-container {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .group-name-text {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .group-name-input {
+  background-color: var(--background-color);
+  border-color: var(--primary-blue);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .member-item-settings {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .member-item-settings:hover {
+  background-color: var(--background-color);
+}
+
+[data-theme="dark"] .member-name-settings {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .member-role-settings {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .danger-zone {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--red);
+}
+
+[data-theme="dark"] .danger-zone-title {
+  color: var(--red);
+}
+
+[data-theme="dark"] .danger-zone-description {
+  color: var(--medium-gray);
+}

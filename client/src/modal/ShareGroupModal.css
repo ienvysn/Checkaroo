@@ -162,3 +162,60 @@
   justify-content: flex-end;
   padding-top: 16px;
 }
+[data-theme="dark"] .share-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .modal-close-btn {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .subtitle {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .invite-section,
+[data-theme="dark"] .qr-section {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .invite-header h4,
+[data-theme="dark"] .qr-header h4 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .group-name-label,
+[data-theme="dark"] .valid-label {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .input-group input {
+  background-color: var(--background-color);
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .qr-image-container {
+  background-color: var(--white);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .secondary-btn {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+  color: var(--primary-blue);
+}
+
+[data-theme="dark"] .secondary-btn:hover {
+  background-color: var(--background-color);
+}
+
+[data-theme="dark"] .help-text {
+  color: var(--medium-gray);
+}

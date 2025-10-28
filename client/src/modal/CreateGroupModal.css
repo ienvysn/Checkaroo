@@ -206,3 +206,49 @@
     justify-content: center;
   }
 }
+[data-theme="dark"] .create-group-modal-content {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .create-group-modal-header h3 {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .create-group-modal-close-btn {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .create-group-form-group label {
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .create-group-form-group input {
+  background-color: var(--light-gray);
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .create-group-form-group input:focus {
+  border-color: var(--primary-blue);
+}
+
+[data-theme="dark"] .create-group-help-text {
+  color: var(--medium-gray);
+}
+
+[data-theme="dark"] .create-group-btn-cancel {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--dark-gray);
+}
+
+[data-theme="dark"] .create-group-btn-cancel:hover {
+  background-color: var(--light-gray);
+}
+
+[data-theme="dark"] .create-group-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--red);
+  color: var(--red);
+}
