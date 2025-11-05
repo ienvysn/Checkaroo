@@ -40,7 +40,8 @@ import ShareGroupModal from "../modal/shareGroupModal";
 import CreateGroupModal from "../modal/CreateGroupModal";
 import ActivityModal from "../modal/ActivityModal";
 import GroupSettingsModal from "../modal/GroupSettingModal";
-
+import UserSettingsModal from "../modal/UserSettingsModal";
+import { SkeletonItemList, SkeletonActivityList } from "./SkeletonLoader";
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -48,6 +49,7 @@ function ListComponent() {
     localStorage.getItem("selectedGroupId") ||
       localStorage.getItem("personalGroupId")
   );
+  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -56,6 +58,8 @@ function ListComponent() {
   const [activities, setActivities] = useState([]);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -117,6 +121,7 @@ function ListComponent() {
 
   const fetchItems = async () => {
     if (selectedGroupId && currentUserId) {
+      setItemsLoading(true);
       try {
         const res = await getItems(selectedGroupId);
         setItems(res.data);
@@ -126,17 +131,22 @@ function ListComponent() {
         console.log("Loaded order for group:", savedOrder);
       } catch (err) {
         console.error("Failed to fetch items:", err);
+      } finally {
+        setItemsLoading(false);
       }
     }
   };
 
   const fetchActivities = async () => {
     if (selectedGroupId) {
+      setActivitiesLoading(true);
       try {
         const res = await getRecentActivities(selectedGroupId);
         setActivities(res.data);
       } catch (err) {
         console.error("Failed to fetch activities:", err);
+      } finally {
+        setActivitiesLoading(false);
       }
     }
   };
@@ -264,6 +274,11 @@ function ListComponent() {
       setSelectedGroupId(personal._id);
     }
     fetchGroups();
+  };
+  const handleAccountDeleted = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("personalGroupId");
+    window.location.reload();
   };
   const handleThemeToggle = () => {
     const newTheme = toggleTheme(theme);
@@ -592,10 +607,32 @@ function ListComponent() {
           >
             + New Group
           </button>
-          <button className="btn-primary" onClick={handleShareClick}>
+          {/* <button className="btn-primary" onClick={handleShareClick}>
             Invite
+          </button> */}
+          <button
+            className="btn-secondary"
+            onClick={() => setIsUserSettingsModalOpen(true)}
+            style={{ marginTop: "auto" }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              style={{ width: "20px", height: "20px" }}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+            Account Settings
           </button>
         </div>
+
         <button onClick={handleLogout} className="logout-btn">
           Logout
         </button>
@@ -769,13 +806,63 @@ function ListComponent() {
                           strategy={verticalListSortingStrategy}
                         >
                           <ul className="item-list">
-                            {orderedIncomplete.map((item) => (
-                              <SortableItem key={item._id} item={item} />
-                            ))}
+                            {itemsLoading ? (
+                              <SkeletonItemList count={5} />
+                            ) : items.length === 0 ? (
+                              <div className="empty-state">
+                                <div className="empty-state-icon">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                                    />
+                                  </svg>
+                                </div>
+                                <h3 className="empty-state-title">
+                                  No items yet
+                                </h3>
+                                <p className="empty-state-description">
+                                  Add items by pressing the button below to get
+                                  started with your list.
+                                </p>
+                                <button
+                                  className="empty-state-action"
+                                  onClick={() => setIsAddItemModalOpen(true)}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M12 4.5v15m7.5-7.5h-15"
+                                    />
+                                  </svg>
+                                  Add your first item
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                {orderedIncomplete.map((item) => (
+                                  <SortableItem key={item._id} item={item} />
+                                ))}
 
-                            {completedItems.map((item) => (
-                              <CompletedItem key={item._id} item={item} />
-                            ))}
+                                {completedItems.map((item) => (
+                                  <CompletedItem key={item._id} item={item} />
+                                ))}
+                              </>
+                            )}
                           </ul>
                         </SortableContext>
                       );
@@ -860,7 +947,11 @@ function ListComponent() {
                   </button>
                 </div>
               </div>
-              {activities.length === 0 ? (
+              {activitiesLoading ? (
+                <ul className="activity-list">
+                  <SkeletonActivityList count={3} />
+                </ul>
+              ) : activities.length === 0 ? (
                 <p
                   style={{
                     textAlign: "center",
@@ -972,6 +1063,11 @@ function ListComponent() {
         onGroupUpdated={handleGroupUpdated}
         onGroupDeleted={handleGroupDeleted}
         onGroupLeft={handleGroupLeft}
+      />
+      <UserSettingsModal
+        isOpen={isUserSettingsModalOpen}
+        onClose={() => setIsUserSettingsModalOpen(false)}
+        onAccountDeleted={handleAccountDeleted}
       />
     </div>
   );

@@ -1,0 +1,119 @@
+/* Base Skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--light-gray) 0%,
+    var(--border-color) 50%,
+    var(--light-gray) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Skeleton Item */
+.skeleton-item {
+  display: grid;
+  grid-template-columns: 32px 40px 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background-color: var(--white);
+}
+
+.skeleton-handle {
+  width: 16px;
+  height: 16px;
+}
+
+.skeleton-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 16px;
+}
+
+.skeleton-name {
+  width: 70%;
+}
+
+.skeleton-quantity {
+  width: 40px;
+}
+
+.skeleton-assigned {
+  width: 60%;
+}
+
+.skeleton-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.skeleton-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+/* Skeleton Activity */
+.skeleton-activity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-activity-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-activity-text {
+  width: 80%;
+}
+
+.skeleton-activity-time {
+  width: 40px;
+  height: 12px;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--light-gray) 0%,
+    var(--border-color) 50%,
+    var(--light-gray) 100%
+  );
+}
+
+[data-theme="dark"] .skeleton-item {
+  background-color: var(--white);
+  border-color: var(--border-color);
+}

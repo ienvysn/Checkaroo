@@ -7,7 +7,13 @@ const {
 } = require("../controllers/resetPasswordController");
 const passport = require("../auth/passport");
 const { sendPasswordResetEmail } = require("../utils/EmailService");
-
+const {
+  getUserProfile,
+  updateUserProfile,
+  changePassword,
+  deleteAccount,
+} = require("../controllers/userController");
+const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post("/register", registerUser);
@@ -17,7 +23,10 @@ router.post("/login", loginUser);
 router.post("/forgot-password", requestPasswordReset);
 router.get("/verify-reset-token/:token", verifyResetToken);
 router.post("/reset-password", resetPassword);
-
+router.get("/profile", protect, getUserProfile);
+router.put("/profile", protect, updateUserProfile);
+router.put("/change-password", protect, changePassword);
+router.delete("/account", protect, deleteAccount);
 // Google OAuth routes
 router.get(
   "/google",
