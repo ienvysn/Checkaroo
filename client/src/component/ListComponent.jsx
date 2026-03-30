@@ -45,6 +45,7 @@ import { SkeletonItemList, SkeletonActivityList } from "./SkeletonLoader";
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState(
     localStorage.getItem("selectedGroupId") ||
       localStorage.getItem("personalGroupId")
@@ -153,6 +154,12 @@ function ListComponent() {
 
   useEffect(() => {
     fetchGroups();
+
+    const handleRefresh = () => {
+      fetchGroups();
+    };
+    window.addEventListener("refresh-groups", handleRefresh);
+    return () => window.removeEventListener("refresh-groups", handleRefresh);
   }, []);
 
   useEffect(() => {
@@ -261,18 +268,12 @@ function ListComponent() {
   };
 
   const handleGroupDeleted = () => {
-    const personal = groups.find((g) => g.isPersonal);
-    if (personal) {
-      setSelectedGroupId(personal._id);
-    }
+    setSelectedGroupId(null);
     fetchGroups();
   };
 
   const handleGroupLeft = () => {
-    const personal = groups.find((g) => g.isPersonal);
-    if (personal) {
-      setSelectedGroupId(personal._id);
-    }
+    setSelectedGroupId(null);
     fetchGroups();
   };
   const handleAccountDeleted = () => {
@@ -539,7 +540,9 @@ function ListComponent() {
 
   const selectedGroup = groups.find((group) => group._id === selectedGroupId);
   const personalGroup = groups.find((group) => group.isPersonal);
-  const sharedGroups = groups.filter((group) => !group.isPersonal);
+  const sharedGroups = groups.filter(
+    (group) => !group.isPersonal && group.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="checkaroo-container">
@@ -548,9 +551,14 @@ function ListComponent() {
           <span className="logo">❖</span>
           <h2>Shared Lists</h2>
         </div>
-        {/* <div className="search-bar">
-          <input type="text" placeholder="Search groups" />
-        </div> */}
+        <div className="search-bar">
+          <input 
+            type="text" 
+            placeholder="Search groups" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
 
         <div className="personal-list">
           <p>Personal</p>

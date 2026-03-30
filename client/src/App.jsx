@@ -53,7 +53,7 @@ function App() {
     window.history.replaceState({}, "", url);
 
     console.log("Successfully joined group:", groupInfo.name);
-    window.location.reload();
+    window.dispatchEvent(new Event("refresh-groups"));
   };
 
   // Show reset password page if reset token in URL

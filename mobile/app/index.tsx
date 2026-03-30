@@ -14,6 +14,7 @@ import { Stack, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser, registerUser } from "../utils/api";
 import { Ionicons } from "@expo/vector-icons";
+import { Toast } from "../components/Toast";
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,6 +23,11 @@ export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
   const router = useRouter();
 
   const handleAuth = async () => {
@@ -39,9 +45,15 @@ export default function LoginScreen() {
       if (data && data.token) {
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("personalGroupId", data.personalGroup);
-        // Navigate to home screen (we'll implement this later)
-        // router.replace("/home");
-        alert("Success! You are now logged in.");
+        
+        setToastMessage(isLogin ? "Welcome back!" : "Account created successfully!");
+        setToastType("success");
+        setToastVisible(true);
+
+        // Navigate after a delay to show the toast
+        setTimeout(() => {
+          router.replace("/home");
+        }, 1500);
       } else {
         setError(data.message || "Authentication failed.");
       }
@@ -59,6 +71,12 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <Stack.Screen options={{ headerShown: false }} />
+      <Toast 
+        visible={toastVisible} 
+        message={toastMessage} 
+        type={toastType} 
+        onHide={() => setToastVisible(false)} 
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
 
