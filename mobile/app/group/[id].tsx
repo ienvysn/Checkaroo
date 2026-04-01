@@ -7,6 +7,10 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,6 +28,10 @@ export default function GroupListScreen() {
   const { id } = useLocalSearchParams();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQuantity, setNewItemQuantity] = useState("1");
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     fetchItems();
@@ -49,6 +57,25 @@ export default function GroupListScreen() {
     } catch (err) {
       console.error("Failed to update item:", err);
       fetchItems(); // Revert on failure
+    }
+  };
+
+  const handleAdd = async () => {
+    if (!newItemName.trim()) return;
+    setIsAdding(true);
+    try {
+      const res = await addItem(id, {
+        name: newItemName.trim(),
+        quantity: parseInt(newItemQuantity) || 1
+      });
+      setItems([res.data, ...items]);
+      setIsAddModalVisible(false);
+      setNewItemName("");
+      setNewItemQuantity("1");
+    } catch (err) {
+      console.error("Failed to add item:", err);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -92,6 +119,64 @@ export default function GroupListScreen() {
           />
         )}
       </View>
+
+      <TouchableOpacity 
+        style={styles.fab} 
+        onPress={() => setIsAddModalVisible(true)}
+      >
+        <Ionicons name="add" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      <Modal
+        visible={isAddModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsAddModalVisible(false)}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add New Item</Text>
+              <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.inputLabel}>Item Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Apples"
+              value={newItemName}
+              onChangeText={setNewItemName}
+              autoFocus
+            />
+            
+            <Text style={styles.inputLabel}>Quantity</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="1"
+              keyboardType="numeric"
+              value={newItemQuantity}
+              onChangeText={setNewItemQuantity}
+            />
+            
+            <TouchableOpacity 
+              style={[styles.addButton, isAdding && styles.addButtonDisabled]}
+              onPress={handleAdd}
+              disabled={isAdding || !newItemName.trim()}
+            >
+              {isAdding ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.addButtonText}>Add Item</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -166,5 +251,74 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6b7280",
     marginTop: 4,
+  },
+  fab: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    backgroundColor: "#4f46e5",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    minHeight: 300,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 20,
+    backgroundColor: "#f9fafb",
+  },
+  addButton: {
+    backgroundColor: "#4f46e5",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  addButtonDisabled: {
+    backgroundColor: "#9ca3af",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
