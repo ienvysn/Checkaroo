@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -29,6 +29,16 @@ export default function LoginScreen() {
   const [toastType, setToastType] = useState<"success" | "error">("success");
 
   const router = useRouter();
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        router.replace("/home");
+      }
+    };
+    checkLogin();
+  }, []);
 
   const handleAuth = async () => {
     setError("");

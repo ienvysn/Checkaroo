@@ -4,17 +4,30 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  FlatList,
   TouchableOpacity,
   SafeAreaView,
   Modal,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { getItems, updateItem, deleteItem, addItem } from "../../utils/api";
+import {
+  getItemOrder,
+  saveItemOrder,
+  addItemToOrder,
+  removeItemFromOrder,
+  applyOrderToItems,
+} from "../../utils/itemOrderStorage";
 
 type Item = {
   _id: string;
@@ -24,24 +37,71 @@ type Item = {
   assignedTo?: any;
 };
 
+// Polyfill atob if not available globally in hermes, though usually provided by Expo
+const decodeTokenPayload = (token: string) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    // basic base64 decode for ascii
+    const rawData =
+      typeof atob === "function"
+        ? atob(base64)
+        : Buffer.from(base64, "base64").toString("binary");
+    return JSON.parse(rawData);
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function GroupListScreen() {
   const { id } = useLocalSearchParams();
+  const groupId = typeof id === "string" ? id : id[0];
+
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Add Item State
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const [newItemQuantity, setNewItemQuantity] = useState("1");
   const [isAdding, setIsAdding] = useState(false);
 
+  // Edit Item State
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [editItemName, setEditItemName] = useState("");
+  const [editItemQuantity, setEditItemQuantity] = useState("1");
+  const [isEditingState, setIsEditingState] = useState(false);
+
   useEffect(() => {
-    fetchItems();
-  }, [id]);
+    const initUser = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        const payload = decodeTokenPayload(token);
+        if (payload?.id) setCurrentUserId(payload.id);
+      }
+    };
+    initUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUserId) {
+      fetchItems();
+    }
+  }, [groupId, currentUserId]);
 
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await getItems(id);
-      setItems(res.data);
+      const res = await getItems(groupId);
+      if (currentUserId) {
+        const savedOrder = await getItemOrder(groupId, currentUserId);
+        const orderedItems = applyOrderToItems(res.data, savedOrder);
+        setItems(orderedItems);
+      } else {
+        setItems(res.data);
+      }
     } catch (err) {
       console.error("Failed to fetch items:", err);
     } finally {
@@ -51,9 +111,23 @@ export default function GroupListScreen() {
 
   const toggleItem = async (item: Item) => {
     try {
-      // Optimistic update
-      setItems(items.map(i => i._id === item._id ? { ...i, isComplete: !i.isComplete } : i));
-      await updateItem(id, item._id, { isComplete: !item.isComplete });
+      const newComplete = !item.isComplete;
+      setItems((prev) =>
+        prev.map((i) =>
+          i._id === item._id ? { ...i, isComplete: newComplete } : i
+        )
+      );
+      await updateItem(groupId, item._id, { isComplete: newComplete });
+
+      if (currentUserId) {
+        if (newComplete) {
+          // Marking complete - usually removes from active order or pushes to bottom
+          await removeItemFromOrder(groupId, currentUserId, item._id);
+        } else {
+          // Marking incomplete - bring to top
+          await addItemToOrder(groupId, currentUserId, item._id, "top");
+        }
+      }
     } catch (err) {
       console.error("Failed to update item:", err);
       fetchItems(); // Revert on failure
@@ -64,11 +138,24 @@ export default function GroupListScreen() {
     if (!newItemName.trim()) return;
     setIsAdding(true);
     try {
-      const res = await addItem(id, {
+      const res = await addItem(groupId, {
         name: newItemName.trim(),
-        quantity: parseInt(newItemQuantity) || 1
+        quantity: parseInt(newItemQuantity) || 1,
       });
-      setItems([res.data, ...items]);
+
+      let updatedList = [res.data, ...items];
+
+      if (currentUserId) {
+        const newOrder = await addItemToOrder(
+          groupId,
+          currentUserId,
+          res.data._id,
+          "top"
+        );
+        updatedList = applyOrderToItems(updatedList, newOrder);
+      }
+
+      setItems(updatedList);
       setIsAddModalVisible(false);
       setNewItemName("");
       setNewItemQuantity("1");
@@ -79,62 +166,174 @@ export default function GroupListScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: Item }) => (
-    <View style={[styles.itemCard, item.isComplete && styles.itemCardCompleted]}>
-      <TouchableOpacity 
-        style={styles.checkboxContainer}
-        onPress={() => toggleItem(item)}
+  const handleEditPress = (item: Item) => {
+    setEditingItem(item);
+    setEditItemName(item.name);
+    setEditItemQuantity(item.quantity.toString());
+    setIsEditModalVisible(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingItem || !editItemName.trim()) return;
+    setIsEditingState(true);
+    try {
+      const res = await updateItem(groupId, editingItem._id, {
+        name: editItemName.trim(),
+        quantity: parseInt(editItemQuantity) || 1,
+      });
+      setItems((prev) =>
+        prev.map((i) => (i._id === editingItem._id ? res.data : i))
+      );
+      setIsEditModalVisible(false);
+      setEditingItem(null);
+    } catch (err) {
+      console.error("Failed to edit item:", err);
+    } finally {
+      setIsEditingState(false);
+    }
+  };
+
+  const handleDeletePress = (item: Item) => {
+    Alert.alert(
+      "Delete Item",
+      `Are you sure you want to delete "${item.name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setItems((prev) => prev.filter((i) => i._id !== item._id));
+              await deleteItem(groupId, item._id);
+              if (currentUserId) {
+                await removeItemFromOrder(groupId, currentUserId, item._id);
+              }
+            } catch (err) {
+              console.error("Failed to delete item:", err);
+              fetchItems();
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const onDragEnd = async ({ data }: { data: Item[] }) => {
+    setItems(data);
+    if (currentUserId) {
+      const newOrder = data.map((i) => i._id);
+      await saveItemOrder(groupId, currentUserId, newOrder);
+    }
+  };
+
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Item>) => (
+    <ScaleDecorator>
+      <View
+        style={[
+          styles.itemCard,
+          item.isComplete && styles.itemCardCompleted,
+          isActive && styles.itemCardActive,
+        ]}
       >
-        <View style={[styles.checkbox, item.isComplete && styles.checkboxChecked]}>
-          {item.isComplete && <Ionicons name="checkmark" size={16} color="#fff" />}
+        <TouchableOpacity
+          onLongPress={drag}
+          delayLongPress={50}
+          style={styles.dragHandle}
+        >
+          <Ionicons name="reorder-two" size={24} color="#9ca3af" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => toggleItem(item)}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              item.isComplete && styles.checkboxChecked,
+            ]}
+          >
+            {item.isComplete && (
+              <Ionicons name="checkmark" size={16} color="#fff" />
+            )}
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.itemInfo}>
+          <Text
+            style={[
+              styles.itemName,
+              item.isComplete && styles.itemTextCompleted,
+            ]}
+          >
+            {item.name}
+          </Text>
+          <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
         </View>
-      </TouchableOpacity>
-      
-      <View style={styles.itemInfo}>
-        <Text style={[styles.itemName, item.isComplete && styles.itemTextCompleted]}>
-          {item.name}
-        </Text>
-        <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleEditPress(item)}
+          >
+            <Ionicons name="pencil" size={20} color="#6b7280" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleDeletePress(item)}
+          >
+            <Ionicons name="trash" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScaleDecorator>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ title: "List Items" }} />
       <View style={styles.content}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#4f46e5" style={{ marginTop: 40 }} />
+        {loading && items.length === 0 ? (
+          <ActivityIndicator
+            size="large"
+            color="#4f46e5"
+            style={{ marginTop: 40 }}
+          />
         ) : items.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="basket-outline" size={64} color="#d1d5db" />
             <Text style={styles.emptyText}>This list is empty.</Text>
           </View>
         ) : (
-          <FlatList
+          <DraggableFlatList
             data={items}
             keyExtractor={(item) => item._id}
             renderItem={renderItem}
+            onDragEnd={onDragEnd}
+            containerStyle={{ flex: 1 }}
             contentContainerStyle={styles.listContainer}
+            activationDistance={15}
           />
         )}
       </View>
 
-      <TouchableOpacity 
-        style={styles.fab} 
+      <TouchableOpacity
+        style={styles.fab}
         onPress={() => setIsAddModalVisible(true)}
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>
 
+      {/* Add Modal */}
       <Modal
         visible={isAddModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setIsAddModalVisible(false)}
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
@@ -144,7 +343,7 @@ export default function GroupListScreen() {
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
             </View>
-            
+
             <Text style={styles.inputLabel}>Item Name</Text>
             <TextInput
               style={styles.input}
@@ -153,7 +352,7 @@ export default function GroupListScreen() {
               onChangeText={setNewItemName}
               autoFocus
             />
-            
+
             <Text style={styles.inputLabel}>Quantity</Text>
             <TextInput
               style={styles.input}
@@ -162,9 +361,12 @@ export default function GroupListScreen() {
               value={newItemQuantity}
               onChangeText={setNewItemQuantity}
             />
-            
-            <TouchableOpacity 
-              style={[styles.addButton, isAdding && styles.addButtonDisabled]}
+
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                isAdding && styles.addButtonDisabled,
+              ]}
               onPress={handleAdd}
               disabled={isAdding || !newItemName.trim()}
             >
@@ -172,6 +374,61 @@ export default function GroupListScreen() {
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
                 <Text style={styles.addButtonText}>Add Item</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        visible={isEditModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsEditModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Item</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>Item Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Apples"
+              value={editItemName}
+              onChangeText={setEditItemName}
+              autoFocus
+            />
+
+            <Text style={styles.inputLabel}>Quantity</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="1"
+              keyboardType="numeric"
+              value={editItemQuantity}
+              onChangeText={setEditItemQuantity}
+            />
+
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                isEditingState && styles.addButtonDisabled,
+              ]}
+              onPress={handleEditSave}
+              disabled={isEditingState || !editItemName.trim()}
+            >
+              {isEditingState ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.addButtonText}>Save Changes</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -191,7 +448,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   listContainer: {
-    paddingBottom: 24,
+    paddingBottom: 80, // give space for FAB
   },
   emptyState: {
     alignItems: "center",
@@ -218,6 +475,15 @@ const styles = StyleSheet.create({
   },
   itemCardCompleted: {
     opacity: 0.6,
+  },
+  itemCardActive: {
+    shadowOpacity: 0.2,
+    elevation: 8,
+    transform: [{ scale: 1.02 }],
+  },
+  dragHandle: {
+    marginRight: 12,
+    justifyContent: "center",
   },
   checkboxContainer: {
     marginRight: 16,
@@ -251,6 +517,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6b7280",
     marginTop: 4,
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  actionButton: {
+    padding: 8,
+    marginLeft: 4,
   },
   fab: {
     position: "absolute",

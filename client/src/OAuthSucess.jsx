@@ -1,9 +1,6 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 const OAuthSuccess = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
     // Get token from URL params
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,7 +20,7 @@ const OAuthSuccess = () => {
       // No token, redirect to login
       window.location.href = "/";
     }
-  }, [navigate]);
+  }, []);
 
   return (
     <div

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./ResetPasswordPage.css";
 
 const ResetPasswordPage = () => {
-  const navigate = useNavigate();
   const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,7 +74,7 @@ const ResetPasswordPage = () => {
 
       // Redirect to login after 3 seconds
       setTimeout(() => {
-        navigate("/");
+        window.location.href = "/";
       }, 3000);
     } catch (err) {
       setError(
@@ -147,7 +145,7 @@ const ResetPasswordPage = () => {
               <p>{error}</p>
               <button
                 className="reset-password-btn"
-                onClick={() => navigate("/")}
+                onClick={() => (window.location.href = "/")}
               >
                 Back to Login
               </button>
@@ -196,7 +194,7 @@ const ResetPasswordPage = () => {
                 <button
                   type="button"
                   className="link-button"
-                  onClick={() => navigate("/")}
+                  onClick={() => (window.location.href = "/")}
                 >
                   Back to Login
                 </button>
