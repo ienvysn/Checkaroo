@@ -18,8 +18,13 @@ export default function JoinGroupModal({ visible, onClose, onSuccess }: JoinGrou
 
   const extractToken = (input: string) => {
     // Attempt to extract token from URL if users paste a full Checkaroo link
-    const urlPattern = /\/invite\/([a-zA-Z0-9-]+)/;
-    const match = input.match(urlPattern);
+    const inviteParamPattern = /[?&]inviteToken=([a-zA-Z0-9-]+)/;
+    const pathPattern = /\/invite\/([a-zA-Z0-9-]+)/;
+    
+    let match = input.match(inviteParamPattern);
+    if (match) return match[1];
+    
+    match = input.match(pathPattern);
     return match ? match[1] : input.trim();
   };
 

@@ -40,6 +40,10 @@ API.interceptors.response.use(
 /* ------------------- Auth ------------------- */
 export const loginUser = (userData: any) => API.post('/auth/login', userData);
 export const registerUser = (userData: any) => API.post('/auth/register', userData);
+export const getUserProfile = () => API.get('/auth/profile');
+export const updateUserProfile = (userData: any) => API.put('/auth/profile', userData);
+export const changePassword = (data: any) => API.put('/auth/change-password', data);
+export const deleteAccount = (data: any) => API.delete('/auth/account', { data });
 
 /* ------------------- Groups ------------------- */
 export const getGroups = () => API.get('/groups');

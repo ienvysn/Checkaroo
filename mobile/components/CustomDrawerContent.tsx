@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getGroups } from '../utils/api';
 import CreateGroupModal from './CreateGroupModal';
 import JoinGroupModal from './JoinGroupModal';
+import UserSettingsModal from './UserSettingsModal';
 
 type Group = {
   _id: string;
@@ -21,6 +22,7 @@ export default function CustomDrawerContent(props: any) {
   const [loading, setLoading] = useState(true);
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isJoinModalVisible, setJoinModalVisible] = useState(false);
+  const [isUserSettingsVisible, setUserSettingsVisible] = useState(false);
 
   const fetchGroups = async () => {
     setLoading(true);
@@ -103,6 +105,11 @@ export default function CustomDrawerContent(props: any) {
           <Text style={styles.footerButtonText}>Join Group</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.footerButton} onPress={() => setUserSettingsVisible(true)}>
+          <Ionicons name="settings-outline" size={20} color="#4f46e5" style={styles.footerIcon} />
+          <Text style={styles.footerButtonText}>Settings</Text>
+        </TouchableOpacity>
+
         <View style={styles.divider} />
         
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -120,6 +127,11 @@ export default function CustomDrawerContent(props: any) {
         visible={isJoinModalVisible}
         onClose={() => setJoinModalVisible(false)}
         onSuccess={fetchGroups}
+      />
+      <UserSettingsModal
+        visible={isUserSettingsVisible}
+        onClose={() => setUserSettingsVisible(false)}
+        onAccountDeleted={handleLogout}
       />
     </View>
   );

@@ -11,8 +11,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Share,
 } from "react-native";
-import { useLocalSearchParams, Stack } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { Drawer } from "expo-router/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import DraggableFlatList, {
   RenderItemParams,
@@ -20,14 +22,15 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { getItems, updateItem, deleteItem, addItem } from "../../utils/api";
+import ActivityLogsModal from "../../../components/ActivityLogsModal";
+import { getItems, updateItem, deleteItem, addItem, getGroupById } from "../../../utils/api";
 import {
   getItemOrder,
   saveItemOrder,
   addItemToOrder,
   removeItemFromOrder,
   applyOrderToItems,
-} from "../../utils/itemOrderStorage";
+} from "../../../utils/itemOrderStorage";
 
 type Item = {
   _id: string;
@@ -60,6 +63,7 @@ export default function GroupListScreen() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [group, setGroup] = useState<any>(null);
 
   // Add Item State
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -73,6 +77,9 @@ export default function GroupListScreen() {
   const [editItemName, setEditItemName] = useState("");
   const [editItemQuantity, setEditItemQuantity] = useState("1");
   const [isEditingState, setIsEditingState] = useState(false);
+
+  // Activity Modal State
+  const [isActivityModalVisible, setIsActivityModalVisible] = useState(false);
 
   useEffect(() => {
     const initUser = async () => {
@@ -88,8 +95,18 @@ export default function GroupListScreen() {
   useEffect(() => {
     if (currentUserId) {
       fetchItems();
+      fetchGroup();
     }
   }, [groupId, currentUserId]);
+
+  const fetchGroup = async () => {
+    try {
+      const res = await getGroupById(groupId);
+      setGroup(res.data);
+    } catch (err) {
+      console.error("Failed to fetch group details:", err);
+    }
+  };
 
   const fetchItems = async () => {
     setLoading(true);
@@ -290,9 +307,37 @@ export default function GroupListScreen() {
     </ScaleDecorator>
   );
 
+  const handleShare = async () => {
+    if (!group || !group.inviteToken) return;
+    try {
+      const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://checkaroo.onrender.com';
+      await Share.share({
+        message: `Join my Checkaroo group!\n\nInvite Code: ${group.inviteToken}\nLink: ${webUrl}/?inviteToken=${group.inviteToken}`,
+      });
+    } catch (error) {
+      console.error("Error sharing invite:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: "List Items" }} />
+      <Drawer.Screen 
+        options={{ 
+          title: group?.name || "List Items",
+          headerRight: () => (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity onPress={() => setIsActivityModalVisible(true)} style={{ marginRight: 15 }}>
+                <Ionicons name="time-outline" size={24} color="#6b7280" />
+              </TouchableOpacity>
+              {group?.inviteToken ? (
+                <TouchableOpacity onPress={handleShare} style={{ marginRight: 15 }}>
+                  <Ionicons name="share-social-outline" size={24} color="#4f46e5" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          )
+        }} 
+      />
       <View style={styles.content}>
         {loading && items.length === 0 ? (
           <ActivityIndicator
@@ -434,6 +479,13 @@ export default function GroupListScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Activity Logs Modal */}
+      <ActivityLogsModal 
+        visible={isActivityModalVisible} 
+        onClose={() => setIsActivityModalVisible(false)} 
+        groupId={groupId as string} 
+      />
     </SafeAreaView>
   );
 }
