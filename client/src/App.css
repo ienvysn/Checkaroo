@@ -697,48 +697,37 @@ h4 {
   height: 20px;
 }
 
-/* Gamification Animations */
+
 
 @keyframes popIn {
   0% {
     transform: scale(0.8);
     opacity: 0.5;
   }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+:root {
+  --anim-check-bg: #d1fae5;
+}
+
+[data-theme="dark"] {
+  --anim-check-bg: #064e3b;
 }
 
 @keyframes checkPulse {
   0% {
-    background-color: var(--white);
+    background-color: transparent;
   }
   50% {
-    background-color: #d1fae5; /* Light green */
-    transform: scale(1.02);
+    background-color: var(--anim-check-bg);
   }
   100% {
-    background-color: var(--white);
-    transform: scale(1);
-  }
-}
-
-[data-theme="dark"] @keyframes checkPulse {
-  0% {
-    background-color: var(--white);
-  }
-  50% {
-    background-color: #064e3b; /* Dark green */
-    transform: scale(1.02);
-  }
-  100% {
-    background-color: var(--white);
-    transform: scale(1);
+    background-color: transparent;
   }
 }
 
