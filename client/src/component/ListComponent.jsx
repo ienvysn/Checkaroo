@@ -42,6 +42,7 @@ import ActivityModal from "../modal/ActivityModal";
 import GroupSettingsModal from "../modal/GroupSettingModal";
 import UserSettingsModal from "../modal/UserSettingsModal";
 import { SkeletonItemList, SkeletonActivityList } from "./SkeletonLoader";
+import { playAddSound, playCheckSound, playUncheckSound } from "../utils/sound";
 function ListComponent() {
   const [items, setItems] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -73,6 +74,7 @@ function ListComponent() {
   const [activeId, setActiveId] = useState(null);
   const [orderedItemIds, setOrderedItemIds] = useState([]);
   const [theme, setTheme] = useState("light");
+  const [animatingItems, setAnimatingItems] = useState({});
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -171,6 +173,9 @@ function ListComponent() {
 
   const handleAddFromModal = (itemData) => {
     addItem(selectedGroupId, itemData).then((res) => {
+      playAddSound();
+      setAnimatingItems(prev => ({ ...prev, [res.data._id]: "added" }));
+      setTimeout(() => setAnimatingItems(prev => ({ ...prev, [res.data._id]: null })), 300);
       setItems([...items, res.data]);
       fetchActivities();
 
@@ -199,6 +204,13 @@ function ListComponent() {
 
   const handleToggle = (id, isComplete) => {
     updateItem(selectedGroupId, id, { isComplete: !isComplete }).then((res) => {
+      if (!isComplete) {
+        playCheckSound();
+        setAnimatingItems(prev => ({ ...prev, [id]: "checked" }));
+        setTimeout(() => setAnimatingItems(prev => ({ ...prev, [id]: null })), 400);
+      } else {
+        playUncheckSound();
+      }
       setItems(items.map((item) => (item._id === id ? res.data : item)));
       fetchActivities();
 
@@ -343,11 +355,14 @@ function ListComponent() {
       transition,
     };
 
+    const animationClass = animatingItems[item._id] === "added" ? "item-added-anim" : 
+                           animatingItems[item._id] === "checked" ? "item-checked-anim" : "";
+
     return (
       <li
         ref={setNodeRef}
         style={style}
-        className={isDragging ? "item-dragging" : ""}
+        className={`${isDragging ? "item-dragging" : ""} ${animationClass}`}
       >
         <div className="drag-handle" {...attributes} {...listeners}>
           <svg
@@ -425,8 +440,9 @@ function ListComponent() {
   };
 
   const CompletedItem = ({ item }) => {
+    const animationClass = animatingItems[item._id] === "checked" ? "item-checked-anim" : "";
     return (
-      <li className="completed">
+      <li className={`completed ${animationClass}`}>
         <div className="drag-handle disabled">
           <svg
             xmlns="http://www.w3.org/2000/svg"

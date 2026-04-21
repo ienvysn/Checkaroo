@@ -9,8 +9,8 @@ const activityRoutes = require("./routes/activity");
 const app = express();
 const cors = require("cors");
 
-const PORT = 5000;
-const MONGO_URI = "mongodb://localhost:27017/sharelist";
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/sharelist";
 
 // Middleware
 app.use(cors());
