@@ -21,6 +21,8 @@ import DraggableFlatList, {
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Haptics from "expo-haptics";
+import { Swipeable } from "react-native-gesture-handler";
 
 import ActivityLogsModal from "../../../components/ActivityLogsModal";
 import { getItems, updateItem, deleteItem, addItem, getGroupById } from "../../../utils/api";
@@ -129,6 +131,14 @@ export default function GroupListScreen() {
   const toggleItem = async (item: Item) => {
     try {
       const newComplete = !item.isComplete;
+      
+      // Gamification: Haptic feedback
+      if (newComplete) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
       setItems((prev) =>
         prev.map((i) =>
           i._id === item._id ? { ...i, isComplete: newComplete } : i
@@ -159,6 +169,9 @@ export default function GroupListScreen() {
         name: newItemName.trim(),
         quantity: parseInt(newItemQuantity) || 1,
       });
+
+      // Gamification: Haptic feedback on add
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
       let updatedList = [res.data, ...items];
 
@@ -244,66 +257,80 @@ export default function GroupListScreen() {
     }
   };
 
+  const renderRightActions = () => (
+    <View style={styles.swipeAction}>
+      <Ionicons name="checkmark-done-circle" size={32} color="#fff" />
+    </View>
+  );
+
   const renderItem = ({ item, drag, isActive }: RenderItemParams<Item>) => (
     <ScaleDecorator>
-      <View
-        style={[
-          styles.itemCard,
-          item.isComplete && styles.itemCardCompleted,
-          isActive && styles.itemCardActive,
-        ]}
+      <Swipeable
+        renderRightActions={renderRightActions}
+        onSwipeableOpen={(direction) => {
+          toggleItem(item);
+        }}
+        containerStyle={{ overflow: "visible" }}
       >
-        <TouchableOpacity
-          onLongPress={drag}
-          delayLongPress={50}
-          style={styles.dragHandle}
+        <View
+          style={[
+            styles.itemCard,
+            item.isComplete && styles.itemCardCompleted,
+            isActive && styles.itemCardActive,
+          ]}
         >
-          <Ionicons name="reorder-two" size={24} color="#9ca3af" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => toggleItem(item)}
-        >
-          <View
-            style={[
-              styles.checkbox,
-              item.isComplete && styles.checkboxChecked,
-            ]}
+          <TouchableOpacity
+            onLongPress={drag}
+            delayLongPress={50}
+            style={styles.dragHandle}
           >
-            {item.isComplete && (
-              <Ionicons name="checkmark" size={16} color="#fff" />
-            )}
+            <Ionicons name="reorder-two" size={24} color="#9ca3af" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => toggleItem(item)}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                item.isComplete && styles.checkboxChecked,
+              ]}
+            >
+              {item.isComplete && (
+                <Ionicons name="checkmark" size={16} color="#fff" />
+              )}
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.itemInfo}>
+            <Text
+              style={[
+                styles.itemName,
+                item.isComplete && styles.itemTextCompleted,
+              ]}
+            >
+              {item.name}
+            </Text>
+            <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
           </View>
-        </TouchableOpacity>
 
-        <View style={styles.itemInfo}>
-          <Text
-            style={[
-              styles.itemName,
-              item.isComplete && styles.itemTextCompleted,
-            ]}
-          >
-            {item.name}
-          </Text>
-          <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleEditPress(item)}
+            >
+              <Ionicons name="pencil" size={20} color="#6b7280" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleDeletePress(item)}
+            >
+              <Ionicons name="trash" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleEditPress(item)}
-          >
-            <Ionicons name="pencil" size={20} color="#6b7280" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleDeletePress(item)}
-          >
-            <Ionicons name="trash" size={20} color="#ef4444" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </Swipeable>
     </ScaleDecorator>
   );
 
@@ -646,5 +673,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  swipeAction: {
+    backgroundColor: "#22c55e",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 20,
+    marginBottom: 12,
+    borderRadius: 12,
+    flex: 1,
   },
 });
